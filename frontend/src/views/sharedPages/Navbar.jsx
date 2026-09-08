@@ -113,19 +113,19 @@ const Navbar = () => {
 
                         <button
                             onClick={toggleTheme}
-                            className="hidden sm:flex size-9 items-center justify-center rounded-lg text-muted-foreground transition-colors hover:bg-muted hover:text-foreground"
+                            className="hidden sm:flex size-9 items-center justify-center rounded-xl text-muted-foreground transition-all duration-200 hover:bg-amber-500/10 hover:text-amber-500 hover:scale-105"
                             title={mounted && theme === "dark" ? "Switch to light mode" : "Switch to dark mode"}
                         >
-                            {mounted && theme === "dark" ? <Sun className="size-4" /> : <Moon className="size-4" />}
+                            {mounted && theme === "dark" ? <Sun className="size-4 text-amber-500" /> : <Moon className="size-4" />}
                         </button>
 
                         <Link
                             href="/cart"
-                            className="relative hidden sm:flex size-9 items-center justify-center rounded-lg text-muted-foreground transition-colors hover:bg-muted hover:text-foreground"
+                            className="relative hidden sm:flex size-9 items-center justify-center rounded-xl text-muted-foreground transition-all duration-200 hover:bg-amber-500/10 hover:text-amber-500 hover:scale-105"
                         >
                             <ShoppingCart className="size-5" />
                             {cartCount > 0 && (
-                                <span className="absolute -right-1 -top-1 flex size-5 items-center justify-center rounded-full bg-foreground text-[10px] font-bold text-background">
+                                <span className="absolute -right-1.5 -top-1.5 flex size-5 items-center justify-center rounded-full bg-gradient-to-r from-orange-500 via-pink-500 to-rose-500 text-[10px] font-bold text-white shadow-md shadow-pink-500/30">
                                     {cartCount}
                                 </span>
                             )}
@@ -135,7 +135,7 @@ const Navbar = () => {
                             user ? (
                                 <div className="relative hidden sm:block group/profile">
                                     <button
-                                        className="flex size-9 items-center justify-center rounded-full bg-foreground text-sm font-bold text-background transition-opacity hover:opacity-90"
+                                        className="flex size-9 items-center justify-center rounded-full bg-gradient-to-tr from-amber-500 via-amber-600 to-yellow-500 text-sm font-bold text-white shadow-md shadow-amber-500/30 ring-2 ring-amber-400/40 transition-all duration-200 hover:scale-105"
                                     >
                                         {user?.name?.charAt(0)?.toUpperCase() || "U"}
                                     </button>
@@ -146,13 +146,13 @@ const Navbar = () => {
                                         </div>
                                         <Link
                                             href="/dashboard"
-                                            className="flex items-center gap-2 px-4 py-2 text-sm text-foreground hover:bg-muted transition-colors"
+                                            className="flex items-center gap-2 px-4 py-2 text-sm text-foreground hover:bg-amber-500/10 hover:text-amber-600 dark:hover:text-amber-400 transition-colors"
                                         >
                                             Dashboard
                                         </Link>
                                         <Link
                                             href="/dashboard/profile"
-                                            className="flex items-center gap-2 px-4 py-2 text-sm text-foreground hover:bg-muted transition-colors"
+                                            className="flex items-center gap-2 px-4 py-2 text-sm text-foreground hover:bg-amber-500/10 hover:text-amber-600 dark:hover:text-amber-400 transition-colors"
                                         >
                                             Profile
                                         </Link>
@@ -170,9 +170,9 @@ const Navbar = () => {
                             ) : (
                                 <Link
                                     href="/login"
-                                    className="hidden sm:inline-block rounded-lg border border-border px-4 py-2 text-sm font-medium text-foreground transition-colors hover:bg-muted"
+                                    className="hidden sm:inline-block rounded-xl border border-amber-500/40 px-4 py-2 text-sm font-semibold text-amber-600 dark:text-amber-400 transition-all duration-200 hover:bg-amber-500 hover:text-white shadow-xs"
                                 >
-                                    Admin
+                                    Admin Login
                                 </Link>
                             )
                         )}
@@ -191,7 +191,7 @@ const Navbar = () => {
             <nav className="hidden border-b border-border md:block">
                 <div className="mx-auto max-w-7xl px-4">
                     <div className="flex items-center gap-1">
-                        <Link href="/" className={`flex items-center gap-2 rounded-lg px-4 py-2.5 text-sm font-bold transition-colors border-b-[3px] ${pathname === "/" ? "border-foreground text-foreground" : "border-transparent text-foreground hover:bg-muted"}`}>
+                        <Link href="/" className={`flex items-center gap-2 rounded-lg px-4 py-2.5 text-sm font-bold transition-colors border-b-[3px] ${pathname === "/" ? "border-primary text-primary" : "border-transparent text-foreground hover:bg-muted"}`}>
                             <House className="size-4" />
                             <span className="text-base">Home</span>
                         </Link>
@@ -209,7 +209,7 @@ const Navbar = () => {
                                             <div key={cat._id}>
                                                 <Link
                                                     href={`/products?category=${cat.slug}`}
-                                                    className="block text-sm font-bold text-foreground hover:underline mb-2"
+                                                    className="block text-sm font-bold text-foreground hover:text-primary transition-colors mb-2"
                                                 >
                                                     {cat.name}
                                                 </Link>
@@ -219,7 +219,7 @@ const Navbar = () => {
                                                             <Link
                                                                 key={idx}
                                                                 href={`/products?category=${sub.slug || cat.slug}`}
-                                                                className="block text-sm text-muted-foreground hover:text-foreground transition-colors"
+                                                                className="block text-sm text-muted-foreground hover:text-primary transition-colors"
                                                             >
                                                                 {sub.name}
                                                             </Link>
@@ -233,14 +233,14 @@ const Navbar = () => {
                             </div>
                         </div>
 
-                        <Link href="/products" className={`flex items-center gap-2 rounded-lg px-4 py-2.5 text-sm font-bold transition-colors border-b-[3px] ${pathname === "/products" ? "border-foreground text-foreground" : "border-transparent text-foreground hover:bg-muted"}`}>
+                        <Link href="/products" className={`flex items-center gap-2 rounded-lg px-4 py-2.5 text-sm font-bold transition-colors border-b-[3px] ${pathname === "/products" ? "border-primary text-primary" : "border-transparent text-foreground hover:bg-muted"}`}>
                             <Store className="size-4" />
                             <span className="text-base">Shop Product</span>
                         </Link>
 
                         <Link
                             href="/best-selling"
-                            className={`flex items-center gap-2 rounded-lg px-4 py-2.5 text-sm font-bold transition-colors border-b-[3px] ${pathname === "/best-selling" ? "border-foreground text-foreground" : "border-transparent text-foreground hover:bg-muted"}`}
+                            className={`flex items-center gap-2 rounded-lg px-4 py-2.5 text-sm font-bold transition-colors border-b-[3px] ${pathname === "/best-selling" ? "border-primary text-primary" : "border-transparent text-foreground hover:bg-muted"}`}
                         >
                             <TrendingUp className="size-4" />
                             <span className="text-base">Best Selling</span>
@@ -248,7 +248,7 @@ const Navbar = () => {
 
                         <Link
                             href="/flash-sale"
-                            className={`flex items-center gap-2 rounded-lg px-4 py-2.5 text-sm font-bold transition-colors border-b-[3px] ${pathname === "/flash-sale" ? "border-foreground text-foreground" : "border-transparent text-foreground hover:bg-muted"}`}
+                            className={`flex items-center gap-2 rounded-lg px-4 py-2.5 text-sm font-bold transition-colors border-b-[3px] ${pathname === "/flash-sale" ? "border-primary text-primary" : "border-transparent text-foreground hover:bg-muted"}`}
                         >
                             <Zap className="size-4" />
                             <span className="text-base">Flash Sale</span>

@@ -71,7 +71,7 @@ export default function Footer() {
                 <li key={link.label}>
                   <Link
                     href={link.to}
-                    className="text-sm text-muted-foreground transition-colors duration-200 hover:text-foreground"
+                    className="text-sm text-muted-foreground transition-colors duration-200 hover:text-primary"
                   >
                     {link.label}
                   </Link>
@@ -90,7 +90,7 @@ export default function Footer() {
                 <li key={link.label}>
                   <Link
                     href={link.to}
-                    className="text-sm text-muted-foreground transition-colors duration-200 hover:text-foreground"
+                    className="text-sm text-muted-foreground transition-colors duration-200 hover:text-primary"
                   >
                     {link.label}
                   </Link>
@@ -112,7 +112,7 @@ export default function Footer() {
                     target={social.href ? "_blank" : "_self"}
                     rel="noopener noreferrer"
                     aria-label={social.label}
-                    className="flex size-9 items-center justify-center rounded-full border border-border text-muted-foreground transition-all duration-200 hover:-translate-y-0.5 hover:border-foreground/40 hover:text-foreground"
+                    className="flex size-9 items-center justify-center rounded-full border border-border text-muted-foreground transition-all duration-200 hover:-translate-y-0.5 hover:border-primary hover:text-primary"
                   >
                     <Icon size={14} />
                   </a>
@@ -121,13 +121,13 @@ export default function Footer() {
             </div>
             <div className="space-y-2.5 text-sm text-muted-foreground">
               {contactEmail && (
-                <a href={`mailto:${contactEmail}`} className="flex items-center gap-2 hover:text-foreground">
+                <a href={`mailto:${contactEmail}`} className="flex items-center gap-2 transition-colors hover:text-primary">
                   <Mail className="size-4 shrink-0" />
                   {contactEmail}
                 </a>
               )}
               {contactPhone && (
-                <a href={`tel:${contactPhone}`} className="flex items-center gap-2 hover:text-foreground">
+                <a href={`tel:${contactPhone}`} className="flex items-center gap-2 transition-colors hover:text-primary">
                   <Phone className="size-4 shrink-0" />
                   {contactPhone}
                 </a>

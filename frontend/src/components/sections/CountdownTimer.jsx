@@ -20,12 +20,12 @@ function getTimeRemaining() {
 function TimeUnit({ value, label }) {
   return (
     <div className="flex flex-col items-center">
-      <div className="flex h-12 w-12 items-center justify-center rounded-xl bg-foreground text-background shadow-lg sm:h-14 sm:w-14">
-        <span suppressHydrationWarning className="text-lg font-bold tabular-nums sm:text-xl">
+      <div className="flex h-12 w-12 items-center justify-center rounded-xl bg-gradient-to-br from-amber-500 via-amber-600 to-yellow-500 text-white shadow-md shadow-amber-500/25 ring-2 ring-amber-400/30 sm:h-14 sm:w-14">
+        <span suppressHydrationWarning className="text-lg font-extrabold tabular-nums sm:text-xl">
           {String(value).padStart(2, "0")}
         </span>
       </div>
-      <span className="mt-1.5 text-[10px] font-medium uppercase tracking-wider text-muted-foreground sm:text-xs">
+      <span className="mt-1.5 text-[10px] font-bold uppercase tracking-wider text-amber-600 dark:text-amber-400 sm:text-xs">
         {label}
       </span>
     </div>
@@ -35,8 +35,8 @@ function TimeUnit({ value, label }) {
 function Separator() {
   return (
     <div className="flex flex-col items-center gap-1.5 pb-5">
-      <div className="size-1.5 rounded-full bg-muted-foreground/40" />
-      <div className="size-1.5 rounded-full bg-muted-foreground/40" />
+      <div className="size-1.5 rounded-full bg-amber-500 animate-pulse" />
+      <div className="size-1.5 rounded-full bg-amber-500 animate-pulse" />
     </div>
   );
 }

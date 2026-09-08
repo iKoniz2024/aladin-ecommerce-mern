@@ -76,7 +76,7 @@ export default function FlashSaleProductCard({ product, index, maxStock }) {
 
               {hasDiscount && (
                 <div className="absolute left-3 top-3 z-10">
-                  <Badge variant="destructive" className="animate-pulse text-[11px] font-semibold">
+                  <Badge className="bg-gradient-to-r from-orange-500 via-pink-500 to-rose-500 text-white font-bold border-none shadow-md shadow-pink-500/20 animate-pulse text-[11px]">
                     {Math.round(product.discountPercentage)}% OFF
                   </Badge>
                 </div>

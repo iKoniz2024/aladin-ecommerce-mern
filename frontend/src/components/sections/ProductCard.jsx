@@ -99,7 +99,7 @@ export default function ProductCard({ product, index, badge }) {
 
               {hasDiscount && (
                 <div className="absolute left-3 top-3 z-10">
-                  <Badge variant="destructive" className="text-[11px] font-semibold">
+                  <Badge className="bg-gradient-to-r from-orange-500 via-pink-500 to-rose-500 text-white font-bold border-none shadow-md shadow-pink-500/20 text-[11px]">
                     -{Math.round(product.discountPercentage)}%
                   </Badge>
                 </div>
@@ -138,7 +138,7 @@ export default function ProductCard({ product, index, badge }) {
                 </p>
               )}
 
-              <h3 className="line-clamp-2 text-sm font-semibold text-foreground sm:text-base">
+              <h3 className="line-clamp-2 text-sm font-semibold text-foreground group-hover:text-primary transition-colors sm:text-base">
                 {product.title}
               </h3>
 

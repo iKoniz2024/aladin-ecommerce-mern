@@ -45,7 +45,7 @@ export default function NewArrivalsProductCard({ product, index }) {
                 loading="lazy"
               />
               {hasDiscount && (
-                <div className="absolute left-0 top-4 z-10 rounded-r bg-foreground px-2 py-1 text-[10px] font-bold text-background">
+                <div className="absolute left-0 top-4 z-10 rounded-r bg-gradient-to-r from-orange-500 to-pink-500 px-2 py-1 text-[10px] font-bold text-white shadow-md shadow-pink-500/20">
                   -{Math.round(product.discountPercentage)}%
                 </div>
               )}
