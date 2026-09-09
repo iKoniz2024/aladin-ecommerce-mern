@@ -773,17 +773,17 @@ const sendInvoiceEmail = async (order, targetEmail = null) => {
                 <td align="center" style="padding:30px 15px;">
                     <table width="100%" cellpadding="0" cellspacing="0" style="max-width:620px;background:#ffffff;border-radius:12px;overflow:hidden;box-shadow:0 4px 24px rgba(0,0,0,0.08);">
                         <tr>
-                            <td style="background:linear-gradient(135deg,#1a1a1a 0%,#2d2d2d 100%);padding:32px 36px;">
+                            <td style="background:linear-gradient(135deg,#0B3C73 0%,#082d56 100%);padding:32px 36px;">
                                 <table width="100%" cellpadding="0" cellspacing="0">
                                     <tr>
                                         <td>
                                             <h1 style="margin:0;font-size:26px;font-weight:700;color:#ffffff;letter-spacing:0.5px;">Aladiinn</h1>
-                                            <p style="margin:6px 0 0;font-size:13px;color:rgba(255,255,255,0.6);letter-spacing:1px;text-transform:uppercase;">Order Invoice</p>
+                                            <p style="margin:6px 0 0;font-size:13px;color:#FFA800;letter-spacing:1px;text-transform:uppercase;font-weight:600;">Order Invoice</p>
                                         </td>
                                         <td align="right" valign="top">
-                                            <div style="background:rgba(255,255,255,0.1);border:1px solid rgba(255,255,255,0.15);border-radius:8px;padding:10px 16px;display:inline-block;">
-                                                <span style="font-size:11px;color:rgba(255,255,255,0.5);display:block;text-transform:uppercase;letter-spacing:0.5px;">Invoice</span>
-                                                <span style="font-size:16px;font-weight:700;color:#ffffff;">#${orderShortId}</span>
+                                            <div style="background:rgba(255,168,0,0.15);border:1px solid #FFA800;border-radius:8px;padding:10px 16px;display:inline-block;">
+                                                <span style="font-size:11px;color:#ffffff;display:block;text-transform:uppercase;letter-spacing:0.5px;opacity:0.8;">Invoice</span>
+                                                <span style="font-size:16px;font-weight:700;color:#FFA800;">#${orderShortId}</span>
                                             </div>
                                         </td>
                                     </tr>
@@ -796,7 +796,7 @@ const sendInvoiceEmail = async (order, targetEmail = null) => {
                                 <table width="100%" cellpadding="0" cellspacing="0">
                                     <tr>
                                         <td style="font-size:12px;color:#888;text-transform:uppercase;letter-spacing:0.5px;">Date</td>
-                                        <td align="right" style="font-size:13px;color:#555;font-weight:500;">${orderDate}</td>
+                                        <td align="right" style="font-size:13px;color:#0B3C73;font-weight:600;">${orderDate}</td>
                                     </tr>
                                 </table>
                             </td>
@@ -804,10 +804,10 @@ const sendInvoiceEmail = async (order, targetEmail = null) => {
 
                         <tr>
                             <td style="padding:32px 36px;">
-                                <p style="margin:0 0 16px;font-size:12px;font-weight:700;color:#888;text-transform:uppercase;letter-spacing:1.5px;">Order Items</p>
+                                <p style="margin:0 0 16px;font-size:12px;font-weight:700;color:#0B3C73;text-transform:uppercase;letter-spacing:1.5px;">Order Items</p>
                                 <table width="100%" cellpadding="0" cellspacing="0" style="border:1px solid #f0f0f0;border-radius:8px;overflow:hidden;border-collapse:separate;">
                                     <thead>
-                                        <tr style="background:#1a1a1a;">
+                                        <tr style="background:#0B3C73;">
                                             <th style="padding:12px 16px;text-align:left;font-size:11px;font-weight:600;color:#fff;text-transform:uppercase;letter-spacing:0.5px;">Product</th>
                                             <th style="padding:12px 16px;text-align:center;font-size:11px;font-weight:600;color:#fff;text-transform:uppercase;letter-spacing:0.5px;">Qty</th>
                                             <th style="padding:12px 16px;text-align:right;font-size:11px;font-weight:600;color:#fff;text-transform:uppercase;letter-spacing:0.5px;">Price</th>
@@ -839,11 +839,11 @@ const sendInvoiceEmail = async (order, targetEmail = null) => {
                                         </td>
                                     </tr>
                                     <tr>
-                                        <td style="padding:14px 0 0;border-top:2px solid #1a1a1a;margin-top:4px;">
+                                        <td style="padding:14px 0 0;border-top:2px solid #0B3C73;margin-top:4px;">
                                             <table width="100%" cellpadding="0" cellspacing="0">
                                                 <tr>
-                                                    <td style="font-size:16px;font-weight:700;color:#1a1a1a;">Total</td>
-                                                    <td align="right" style="font-size:18px;font-weight:700;color:#1a1a1a;">৳${Number(order.totalPrice).toFixed(2)}</td>
+                                                    <td style="font-size:16px;font-weight:700;color:#0B3C73;">Total</td>
+                                                    <td align="right" style="font-size:18px;font-weight:700;color:#0B3C73;">৳${Number(order.totalPrice).toFixed(2)}</td>
                                                 </tr>
                                             </table>
                                         </td>
@@ -855,7 +855,7 @@ const sendInvoiceEmail = async (order, targetEmail = null) => {
                                 <table width="100%" cellpadding="0" cellspacing="0">
                                     <tr>
                                         <td width="50%" valign="top" style="padding-right:20px;">
-                                            <p style="margin:0 0 12px;font-size:12px;font-weight:700;color:#888;text-transform:uppercase;letter-spacing:1.5px;">Shipping Address</p>
+                                            <p style="margin:0 0 12px;font-size:12px;font-weight:700;color:#0B3C73;text-transform:uppercase;letter-spacing:1.5px;">Shipping Address</p>
                                             <div style="background:#fafafa;border-radius:8px;padding:16px;border:1px solid #f0f0f0;">
                                                 <p style="margin:0;font-size:14px;font-weight:600;color:#1a1a1a;">${order.shippingAddress?.fullName || ""}</p>
                                                 <p style="margin:6px 0 0;font-size:13px;color:#666;line-height:1.7;">
@@ -867,7 +867,7 @@ const sendInvoiceEmail = async (order, targetEmail = null) => {
                                         </td>
 
                                         <td width="50%" valign="top" style="padding-left:20px;">
-                                            <p style="margin:0 0 12px;font-size:12px;font-weight:700;color:#888;text-transform:uppercase;letter-spacing:1.5px;">Payment Info</p>
+                                            <p style="margin:0 0 12px;font-size:12px;font-weight:700;color:#0B3C73;text-transform:uppercase;letter-spacing:1.5px;">Payment Info</p>
                                             <div style="background:#fafafa;border-radius:8px;padding:16px;border:1px solid #f0f0f0;">
                                                 <p style="margin:0 0 8px;font-size:13px;color:#666;">
                                                     <span style="color:#888;">Method:</span> <span style="font-weight:600;color:#333;text-transform:capitalize;">${order.paymentMethod || "N/A"}</span>
@@ -884,9 +884,9 @@ const sendInvoiceEmail = async (order, targetEmail = null) => {
                         </tr>
 
                         <tr>
-                            <td style="background:#fafafa;border-top:1px solid #f0f0f0;padding:20px 36px;text-align:center;">
-                                <p style="margin:0 0 4px;font-size:12px;color:#999;">Thank you for shopping with <strong style="color:#666;">Aladiinn</strong></p>
-                                <p style="margin:0;font-size:11px;color:#ccc;">If you have any questions, contact us at our support.</p>
+                            <td style="background:#082d56;border-top:1px solid #0B3C73;padding:20px 36px;text-align:center;">
+                                <p style="margin:0 0 4px;font-size:12px;color:#ffffff;">Thank you for shopping with <strong style="color:#FFA800;">Aladiinn</strong></p>
+                                <p style="margin:0;font-size:11px;color:rgba(255,255,255,0.7);">If you have any questions, contact us at our support.</p>
                             </td>
                         </tr>
                     </table>
