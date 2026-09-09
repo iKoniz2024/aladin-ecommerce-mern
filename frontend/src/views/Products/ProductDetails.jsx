@@ -27,6 +27,7 @@ import { formatBDT } from "@/utils/currency";
 import { Helmet } from "react-helmet-async";
 import useSettings from "@/hooks/useSettings";
 import { useAuth } from "@/hooks/useAuth";
+import { event as trackPixelEvent } from "@/utils/fpixel";
 
 
 
@@ -191,10 +192,8 @@ export default function ProductDetails({ children }) {
                 className="aspect-4/5 w-full object-cover"
               />
               {hasDiscount && (
-                <div className="absolute left-3 top-3">
-                  <Badge className="bg-foreground text-background text-xs font-semibold">
-                    -{Math.round(product.discountPercentage)}%
-                  </Badge>
+                <div className="absolute left-0 top-4 z-10 rounded-r-md bg-gradient-to-r from-orange-500 via-pink-500 to-rose-500 px-2 py-1 text-xs sm:text-sm font-black text-white tracking-tight shadow-md">
+                  -{Math.round(product.discountPercentage)}%
                 </div>
               )}
             </div>
@@ -347,7 +346,7 @@ export default function ProductDetails({ children }) {
                 {!isAdmin && (
                   <Button
                     size="lg"
-                    className="flex-1 rounded bg-primary text-primary-foreground hover:bg-primary/90 text-base font-bold"
+                    className="flex-1 rounded bg-[#FFA800] text-[#0B3C73] hover:bg-[#e69500] text-base font-extrabold shadow-md transition-all active:scale-[0.99]"
                     disabled={product.stock === 0}
                     onClick={handleAddToCart}
                   >

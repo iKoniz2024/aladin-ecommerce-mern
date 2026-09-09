@@ -199,7 +199,7 @@ export default function OrderModal({ product, open, onClose }) {
           <button
             onClick={handleAddToCart}
             disabled={isOutOfStock}
-            className="flex items-center gap-2 rounded-lg bg-foreground px-6 py-2.5 text-sm font-medium text-background transition-colors hover:bg-foreground/90 disabled:opacity-50"
+            className="flex items-center gap-2 rounded-lg bg-[#FFA800] text-[#0B3C73] px-6 py-2.5 text-sm font-bold transition-all duration-200 hover:bg-[#e69500] hover:shadow-md active:scale-[0.99] disabled:opacity-50"
           >
             <ShoppingCart className="size-4" />
             Add to cart

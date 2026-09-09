@@ -75,10 +75,8 @@ export default function FlashSaleProductCard({ product, index, maxStock }) {
               />
 
               {hasDiscount && (
-                <div className="absolute left-3 top-3 z-10">
-                  <Badge className="bg-gradient-to-r from-orange-500 via-pink-500 to-rose-500 text-white font-bold border-none shadow-md shadow-pink-500/20 animate-pulse text-[11px]">
-                    {Math.round(product.discountPercentage)}% OFF
-                  </Badge>
+                <div className="absolute left-0 top-3 z-10 rounded-r-md bg-gradient-to-r from-orange-500 via-pink-500 to-rose-500 px-1.5 py-1 text-[11px] sm:text-xs font-black text-white tracking-tight shadow-md animate-pulse">
+                  -{Math.round(product.discountPercentage)}%
                 </div>
               )}
 
@@ -134,7 +132,7 @@ export default function FlashSaleProductCard({ product, index, maxStock }) {
                     e.preventDefault();
                     setShowModal(true);
                   }}
-                  className="w-full rounded-lg bg-foreground py-2.5 text-sm font-medium text-background transition-colors hover:bg-foreground/90 disabled:opacity-50"
+                  className="w-full rounded-lg bg-[#FFA800] text-[#0B3C73] py-2.5 text-sm font-bold transition-all duration-200 hover:bg-[#e69500] hover:shadow-md active:scale-[0.99] disabled:opacity-50"
                 >
                   {product.stock === 0 ? "Unavailable" : "অর্ডার করুন"}
                 </button>

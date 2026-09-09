@@ -17,6 +17,7 @@ import {
   XCircle,
   Calendar,
   ShoppingBag,
+  Mail,
 } from "lucide-react";
 import { useState } from "react";
 import { Helmet } from "react-helmet-async";
@@ -237,6 +238,17 @@ export default function OrderDetails({ children }) {
           initial={{ opacity: 0, y: 12 }}
           animate={{ opacity: 1, y: 0 }}
         >
+          {/* Email Invoice Spam Notice Banner */}
+          <div className="mb-4 flex items-start gap-3 rounded-xl border border-[#0B3C73]/20 bg-[#0B3C73]/5 p-4 text-sm text-foreground dark:border-[#FFA800]/30 dark:bg-[#FFA800]/10">
+            <Mail className="mt-0.5 size-5 shrink-0 text-[#0B3C73] dark:text-[#FFA800]" />
+            <div>
+              <p className="font-bold text-[#0B3C73] dark:text-[#FFA800]">ইমেইল ইনভয়েস নোটিশ:</p>
+              <p className="mt-0.5 text-xs text-muted-foreground sm:text-sm">
+                আপনার অর্ডারের ক্যাশ ইনভয়েসটি আপনার ইমেইলে পাঠানো হয়েছে। ইনবক্সে সরাসরি না পেলে দয়া করে আপনার ইমেইলের <strong>Spam / Junk</strong> ফোল্ডার চেক করুন।
+              </p>
+            </div>
+          </div>
+
           {/* Header */}
           <div className="mb-6 overflow-hidden rounded-2xl border border-border bg-card shadow-lg shadow-black/5">
             <div className="border-b border-border bg-linear-to-r from-muted/40 to-muted/20 px-5 py-5 sm:px-6">

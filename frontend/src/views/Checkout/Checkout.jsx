@@ -119,7 +119,7 @@ export default function Checkout({ children }) {
         value: total,
         currency: "BDT",
       });
-      toast.success("Order placed successfully!");
+      toast.success("Order placed successfully! Please check your email (Inbox or Spam) for invoice.", { duration: 6000 });
       clearLocalCart();
       refetchCartCount(0);
       if (data?.insertedId) {
@@ -382,7 +382,7 @@ export default function Checkout({ children }) {
 
                 <Button
                   type="submit"
-                  className="mt-6 w-full rounded-lg"
+                  className="mt-6 w-full rounded-lg bg-[#FFA800] text-[#0B3C73] hover:bg-[#e69500] font-extrabold text-base shadow-md transition-all active:scale-[0.99]"
                   size="lg"
                   disabled={orderMutation.isPending}
                 >

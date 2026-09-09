@@ -97,10 +97,8 @@ function CompactProductCard({ product, index }) {
             )}
 
             {hasDiscount && (
-              <div className="absolute right-2 top-2 z-10">
-                <Badge variant="destructive" className="text-[10px] font-semibold px-1.5 py-0.5 shadow-md">
-                  -{Math.round(product.discountPercentage)}%
-                </Badge>
+              <div className="absolute left-0 top-3 z-10 rounded-r-md bg-gradient-to-r from-orange-500 via-pink-500 to-rose-500 px-1.5 py-1 text-[11px] sm:text-xs font-black text-white tracking-tight shadow-md">
+                -{Math.round(product.discountPercentage)}%
               </div>
             )}
 

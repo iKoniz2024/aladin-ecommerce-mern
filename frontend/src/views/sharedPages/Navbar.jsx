@@ -95,7 +95,7 @@ const Navbar = () => {
                     <div className="flex items-center gap-2 sm:gap-3">
                         <Link
                             href="/orders"
-                            className="hidden items-center gap-1.5 rounded-lg bg-primary px-3 py-2 sm:px-4 sm:py-2.5 text-xs font-bold text-primary-foreground transition-colors hover:bg-primary/90 md:flex shrink-0"
+                            className="hidden items-center gap-1.5 rounded-full bg-[#0B3C73] px-3.5 py-2 sm:px-4 sm:py-2.5 text-xs font-bold text-white transition-all hover:bg-[#082d56] md:flex shrink-0 shadow-xs"
                         >
                             <Package className="size-4 shrink-0" />
                             <span>Track Your Order</span>
@@ -103,7 +103,7 @@ const Navbar = () => {
 
                         <a
                             href={`tel:${mounted ? contactPhone : "+8801XXXXXXXXX"}`}
-                            className="hidden items-center gap-1.5 rounded-lg bg-primary px-3 py-2 sm:px-4 sm:py-2.5 text-xs font-bold text-primary-foreground transition-colors hover:bg-primary/90 md:flex shrink-0"
+                            className="hidden items-center gap-1.5 rounded-full bg-[#0B3C73] px-3.5 py-2 sm:px-4 sm:py-2.5 text-xs font-bold text-white transition-all hover:bg-[#082d56] md:flex shrink-0 shadow-xs"
                         >
                             <Phone className="size-4 shrink-0" />
                             <span>{mounted ? contactPhone : "+8809613111333"}</span>
@@ -125,7 +125,7 @@ const Navbar = () => {
                         >
                             <ShoppingCart className="size-5" />
                             {cartCount > 0 && (
-                                <span className="absolute -right-1.5 -top-1.5 flex size-5 items-center justify-center rounded-full bg-gradient-to-r from-orange-500 via-pink-500 to-rose-500 text-[10px] font-bold text-white shadow-md shadow-pink-500/30">
+                                <span className="absolute -right-1.5 -top-1.5 flex size-5 items-center justify-center rounded-full bg-[#FFA800] text-[10px] font-extrabold text-[#0B3C73] shadow-md">
                                     {cartCount}
                                 </span>
                             )}
@@ -135,7 +135,7 @@ const Navbar = () => {
                             user ? (
                                 <div className="relative hidden sm:block group/profile">
                                     <button
-                                        className="flex size-9 items-center justify-center rounded-full bg-gradient-to-tr from-amber-500 via-amber-600 to-yellow-500 text-sm font-bold text-white shadow-md shadow-amber-500/30 ring-2 ring-amber-400/40 transition-all duration-200 hover:scale-105"
+                                        className="flex size-9 items-center justify-center rounded-full bg-[#0B3C73] text-sm font-extrabold text-white shadow-md shadow-[#0B3C73]/30 ring-2 ring-[#0B3C73]/40 transition-all duration-200 hover:scale-105 hover:bg-[#082d56]"
                                     >
                                         {user?.name?.charAt(0)?.toUpperCase() || "U"}
                                     </button>
@@ -146,13 +146,13 @@ const Navbar = () => {
                                         </div>
                                         <Link
                                             href="/dashboard"
-                                            className="flex items-center gap-2 px-4 py-2 text-sm text-foreground hover:bg-amber-500/10 hover:text-amber-600 dark:hover:text-amber-400 transition-colors"
+                                            className="flex items-center gap-2 px-4 py-2 text-sm text-foreground hover:bg-[#FFA800]/10 hover:text-[#0B3C73] transition-colors font-medium"
                                         >
                                             Dashboard
                                         </Link>
                                         <Link
                                             href="/dashboard/profile"
-                                            className="flex items-center gap-2 px-4 py-2 text-sm text-foreground hover:bg-amber-500/10 hover:text-amber-600 dark:hover:text-amber-400 transition-colors"
+                                            className="flex items-center gap-2 px-4 py-2 text-sm text-foreground hover:bg-[#FFA800]/10 hover:text-[#0B3C73] transition-colors font-medium"
                                         >
                                             Profile
                                         </Link>
@@ -161,7 +161,7 @@ const Navbar = () => {
                                                 await logout();
                                                 router.push("/");
                                             }}
-                                            className="flex w-full items-center gap-2 px-4 py-2 text-sm text-red-600 hover:bg-red-50 dark:hover:bg-red-900/10 transition-colors"
+                                            className="flex w-full items-center gap-2 px-4 py-2 text-sm text-red-600 hover:bg-red-50 dark:hover:bg-red-900/10 transition-colors font-medium"
                                         >
                                             Logout
                                         </button>
@@ -170,7 +170,7 @@ const Navbar = () => {
                             ) : (
                                 <Link
                                     href="/login"
-                                    className="hidden sm:inline-block rounded-xl border border-amber-500/40 px-4 py-2 text-sm font-semibold text-amber-600 dark:text-amber-400 transition-all duration-200 hover:bg-amber-500 hover:text-white shadow-xs"
+                                    className="hidden sm:inline-block rounded-full bg-[#0B3C73] px-4 py-2 text-xs font-bold text-white transition-all duration-200 hover:bg-[#082d56] shadow-xs"
                                 >
                                     Admin Login
                                 </Link>
@@ -414,7 +414,7 @@ const Navbar = () => {
                                     <Link
                                         href="/login"
                                         onClick={() => setMobileOpen(false)}
-                                        className="block w-full rounded-lg border border-border px-4 py-2.5 text-center text-sm font-medium text-foreground transition-colors hover:bg-muted"
+                                        className="block w-full rounded-full bg-[#0B3C73] px-4 py-2.5 text-center text-sm font-bold text-white transition-colors hover:bg-[#082d56]"
                                     >
                                         Admin Login
                                     </Link>

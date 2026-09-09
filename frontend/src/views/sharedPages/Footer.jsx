@@ -46,24 +46,24 @@ export default function Footer() {
   ];
 
   return (
-    <footer className="border-t border-border bg-card text-card-foreground">
+    <footer className="border-t border-[#093260] bg-[#0B3C73] text-white">
       <div className="mx-auto max-w-7xl px-4 py-10 sm:px-6 sm:py-14 lg:px-8">
         <div className="grid grid-cols-1 gap-8 sm:grid-cols-2 lg:grid-cols-4">
           {/* Logo & Description */}
           <div className="space-y-4">
             {logo && (
               <Link href="/" className="inline-block">
-                <img src={logo} alt={siteName} className="h-20 sm:h-36 w-auto object-contain dark:invert" />
+                <img src={logo} alt={siteName} className="h-20 sm:h-28 w-auto object-contain" />
               </Link>
             )}
-            <p className="text-sm leading-relaxed text-muted-foreground">
+            <p className="text-sm leading-relaxed text-blue-100/80">
               {siteName} — providing elegance & lucrative outfit items sourced both locally & globally.
             </p>
           </div>
 
           {/* Quick Links */}
           <div>
-            <h3 className="mb-4 text-sm font-bold uppercase tracking-wider text-foreground">
+            <h3 className="mb-4 text-sm font-bold uppercase tracking-wider text-[#FFA800]">
               Quick Links
             </h3>
             <ul className="space-y-2.5">
@@ -71,7 +71,7 @@ export default function Footer() {
                 <li key={link.label}>
                   <Link
                     href={link.to}
-                    className="text-sm text-muted-foreground transition-colors duration-200 hover:text-primary"
+                    className="text-sm text-blue-100/80 transition-colors duration-200 hover:text-[#FFA800]"
                   >
                     {link.label}
                   </Link>
@@ -82,7 +82,7 @@ export default function Footer() {
 
           {/* Services & Help */}
           <div>
-            <h3 className="mb-4 text-sm font-bold uppercase tracking-wider text-foreground">
+            <h3 className="mb-4 text-sm font-bold uppercase tracking-wider text-[#FFA800]">
               Services & Help
             </h3>
             <ul className="space-y-2.5">
@@ -90,7 +90,7 @@ export default function Footer() {
                 <li key={link.label}>
                   <Link
                     href={link.to}
-                    className="text-sm text-muted-foreground transition-colors duration-200 hover:text-primary"
+                    className="text-sm text-blue-100/80 transition-colors duration-200 hover:text-[#FFA800]"
                   >
                     {link.label}
                   </Link>
@@ -112,29 +112,29 @@ export default function Footer() {
                     target={social.href ? "_blank" : "_self"}
                     rel="noopener noreferrer"
                     aria-label={social.label}
-                    className="flex size-9 items-center justify-center rounded-full border border-border text-muted-foreground transition-all duration-200 hover:-translate-y-0.5 hover:border-primary hover:text-primary"
+                    className="flex size-9 items-center justify-center rounded-full border border-white/20 text-white transition-all duration-200 hover:-translate-y-0.5 hover:border-[#FFA800] hover:bg-[#FFA800] hover:text-[#0B3C73]"
                   >
                     <Icon size={14} />
                   </a>
                 );
               })}
             </div>
-            <div className="space-y-2.5 text-sm text-muted-foreground">
+            <div className="space-y-2.5 text-sm text-blue-100/80">
               {contactEmail && (
-                <a href={`mailto:${contactEmail}`} className="flex items-center gap-2 transition-colors hover:text-primary">
-                  <Mail className="size-4 shrink-0" />
+                <a href={`mailto:${contactEmail}`} className="flex items-center gap-2 transition-colors hover:text-[#FFA800]">
+                  <Mail className="size-4 shrink-0 text-[#FFA800]" />
                   {contactEmail}
                 </a>
               )}
               {contactPhone && (
-                <a href={`tel:${contactPhone}`} className="flex items-center gap-2 transition-colors hover:text-primary">
-                  <Phone className="size-4 shrink-0" />
+                <a href={`tel:${contactPhone}`} className="flex items-center gap-2 transition-colors hover:text-[#FFA800]">
+                  <Phone className="size-4 shrink-0 text-[#FFA800]" />
                   {contactPhone}
                 </a>
               )}
               {address && (
                 <div className="flex items-start gap-2">
-                  <MapPin className="mt-0.5 size-4 shrink-0" />
+                  <MapPin className="mt-0.5 size-4 shrink-0 text-[#FFA800]" />
                   <span>{address}</span>
                 </div>
               )}
@@ -144,16 +144,16 @@ export default function Footer() {
       </div>
 
       {/* Copyright */}
-      <div className="border-t border-border">
+      <div className="border-t border-white/10 bg-[#082d56]">
         <div className="mx-auto flex max-w-7xl flex-col items-center justify-between gap-3 px-4 py-4 sm:flex-row sm:px-6 lg:px-8">
-          <p className="text-xs text-muted-foreground">
+          <p className="text-xs text-blue-100/70">
             &copy; {new Date().getFullYear()} {siteName}. All rights reserved.
           </p>
-          <div className="flex gap-4 text-xs text-muted-foreground">
-            <Link href="/terms" className="hover:text-foreground">
+          <div className="flex gap-4 text-xs text-blue-100/70">
+            <Link href="/terms" className="hover:text-[#FFA800]">
               Terms
             </Link>
-            <Link href="/privacy" className="hover:text-foreground">
+            <Link href="/privacy" className="hover:text-[#FFA800]">
               Privacy
             </Link>
           </div>

@@ -346,7 +346,7 @@ export default function Cart({ children }) {
                 </div>
               </div>
               <Button
-                className="mt-6 w-full rounded-lg"
+                className="mt-6 w-full rounded-lg bg-[#FFA800] text-[#0B3C73] hover:bg-[#e69500] font-extrabold text-base shadow-md transition-all active:scale-[0.99]"
                 size="lg"
                 disabled={hasStockIssues}
                 onClick={() => router.push("/checkout")}
