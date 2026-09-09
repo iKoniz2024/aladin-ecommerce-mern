@@ -115,7 +115,7 @@ export default function StickyCartDrawer() {
           </div>
           <button
             type="button"
-            className="rounded-full p-2 text-muted-foreground transition hover:bg-muted hover:text-foreground"
+            className="rounded-full p-2 text-destructive transition hover:bg-destructive/10 hover:text-destructive"
             onClick={() => setOpen(false)}
             aria-label="Close cart drawer"
           >
@@ -166,7 +166,7 @@ export default function StickyCartDrawer() {
                   </div>
                   <button
                     type="button"
-                    className="rounded-lg p-2 text-muted-foreground transition hover:bg-destructive/10 hover:text-destructive"
+                    className="rounded-lg p-2 text-destructive transition hover:bg-destructive/10 hover:text-destructive"
                     onClick={() => removeMutation.mutate({ productId: item.productId, size: item.size || "" })}
                     aria-label={`Remove ${item.title || "item"} from cart`}
                   >

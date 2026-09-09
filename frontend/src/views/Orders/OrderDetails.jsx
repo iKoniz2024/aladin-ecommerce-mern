@@ -242,9 +242,9 @@ export default function OrderDetails({ children }) {
           <div className="mb-4 flex items-start gap-3 rounded-xl border border-[#0B3C73]/20 bg-[#0B3C73]/5 p-4 text-sm text-foreground dark:border-[#FFA800]/30 dark:bg-[#FFA800]/10">
             <Mail className="mt-0.5 size-5 shrink-0 text-[#0B3C73] dark:text-[#FFA800]" />
             <div>
-              <p className="font-bold text-[#0B3C73] dark:text-[#FFA800]">ইমেইল ইনভয়েস নোটিশ:</p>
+              <p className="font-bold text-[#0B3C73] dark:text-[#FFA800]">Email Invoice Notice:</p>
               <p className="mt-0.5 text-xs text-muted-foreground sm:text-sm">
-                আপনার অর্ডারের ক্যাশ ইনভয়েসটি আপনার ইমেইলে পাঠানো হয়েছে। ইনবক্সে সরাসরি না পেলে দয়া করে আপনার ইমেইলের <strong>Spam / Junk</strong> ফোল্ডার চেক করুন।
+                The cash invoice for your order has been sent to your email. If you don't see it directly in your inbox, please check your <strong>Spam / Junk</strong> folder.
               </p>
             </div>
           </div>

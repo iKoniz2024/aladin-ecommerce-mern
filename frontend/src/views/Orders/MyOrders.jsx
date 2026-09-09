@@ -397,17 +397,14 @@ export default function MyOrders() {
         {/* Instructions */}
         <div className="rounded border border-border bg-card p-6 sm:p-8">
           <h2 className="mb-4 text-lg font-bold text-foreground">
-            অর্ডার ট্র্যাককরুন
+            Track Order
           </h2>
           <div className="space-y-2 text-sm leading-relaxed text-muted-foreground">
             <p>
-              ১। পণ্যর ডেলিভারী আপডেট পেতে আপনার Mobile Number নাম্বার দিয়ে অর্ডার
-              ট্র্যাককরুন।
+              1. Track your order using your Mobile Number to get delivery updates.
             </p>
             <p>
-              ২। আপনার অর্ডার করা পণ্যর ডেলিভারীর বর্তমান অবস্থা জানতে নিমের
-              &quot;ট্র্যাক বক্স&quot; এ Mobile নাম্বার টি প্রদানকরুন এবং
-              &quot;ট্র্যাক অর্ডার&quot; বাটনে ক্লিক করুন।
+              2. To check your order status, enter your Mobile Number or Invoice ID in the input box below and click &quot;Track Order&quot;.
             </p>
           </div>
         </div>
@@ -454,12 +451,12 @@ export default function MyOrders() {
                 <Package className="size-7 text-muted-foreground/40" />
               </div>
               <p className="text-base font-semibold text-foreground">
-                অর্ডার খুঁজে পাওয়া যায়নি
+                Order Not Found
               </p>
               <p className="mt-1.5 text-sm text-muted-foreground">
-                আমরা সেই আইডি দিয়ে কোনো অর্ডার খুঁজে পাইনি।
+                We could not find any order matching that information.
                 <br />
-                অনুগ্রহ করে আবার চেক করে চেষ্টা করুন।
+                Please verify the details and try again.
               </p>
             </motion.div>
           )}

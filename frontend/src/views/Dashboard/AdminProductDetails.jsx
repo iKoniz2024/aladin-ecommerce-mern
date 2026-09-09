@@ -1,7 +1,7 @@
 "use client";
 
 import { useRouter, useParams } from 'next/navigation';
-import { useState, useRef } from "react";
+import { useState, useRef, useMemo } from "react";
 import { compressImage } from "@/utils/compressImage";
 import { useQuery, useMutation, useQueryClient } from "@tanstack/react-query";
 import { useForm } from "react-hook-form";
@@ -9,7 +9,7 @@ import { zodResolver } from "@hookform/resolvers/zod";
 import { z } from "zod";
 import { motion } from "framer-motion";
 import toast from "react-hot-toast";
-import { ArrowLeft, Save, Trash2, Camera, X } from "lucide-react";
+import { ArrowLeft, Save, Trash2, Camera, X, Package, Tag, Sliders, ImagePlus, Plus } from "lucide-react";
 import { Helmet } from "react-helmet-async";
 import useSettings from "@/hooks/useSettings";
 import { getProductById, updateProduct, deleteProduct } from "@/services/product.api";
@@ -130,6 +130,7 @@ export default function AdminProductDetails({ children }) {
   const [imageFiles, setImageFiles] = useState([]);
   const [thumbnailPreview, setThumbnailPreview] = useState("");
   const [imagePreviews, setImagePreviews] = useState([]);
+  const [existingImages, setExistingImages] = useState([]);
   const [thumbnailDrag, setThumbnailDrag] = useState(false);
   const [imagesDrag, setImagesDrag] = useState(false);
   const thumbnailInputRef = useRef(null);
@@ -198,6 +199,7 @@ export default function AdminProductDetails({ children }) {
     setPrevProductId(product._id);
     setSelectedSizes(product.sizes ?? []);
     setColorVariants(product.colors ?? []);
+    setExistingImages(product.images ?? []);
     setDynamicAttributes(product.attributes ?? {});
     if (product.sizeMeasurements) {
       const initialMeasurements = {};
@@ -319,6 +321,20 @@ export default function AdminProductDetails({ children }) {
     setColorVariants((prev) => prev.filter((_, i) => i !== index));
   };
 
+  const handleRemoveExistingImage = (index) => {
+    setExistingImages((prev) => prev.filter((_, i) => i !== index));
+  };
+
+  const handleRemoveNewImage = (index) => {
+    setImageFiles((prev) => prev.filter((_, i) => i !== index));
+    setImagePreviews((prev) => prev.filter((_, i) => i !== index));
+  };
+
+  const handleRemoveThumbnail = () => {
+    setThumbnailFile(null);
+    setThumbnailPreview("");
+  };
+
   const onSubmit = async (formData) => {
     const activeFields = MEASUREMENT_PRESETS[measurementPreset]?.fields || [];
     if (selectedSizes.length > 0) {
@@ -332,8 +348,16 @@ export default function AdminProductDetails({ children }) {
       }
     }
 
-    let thumbnail = product.thumbnail ?? "";
-    let images = product.images ?? [];
+    let thumbnail = thumbnailPreview ? "" : (product.thumbnail ?? "");
+    if (thumbnailFile) {
+      thumbnail = await toBase64(thumbnailFile);
+    }
+
+    let images = [...existingImages];
+    if (imageFiles.length > 0) {
+      const newBase64Images = await Promise.all(imageFiles.map((f) => toBase64(f)));
+      images = [...images, ...newBase64Images];
+    }
 
     const processedColors = await Promise.all(
       colorVariants.map(async (c) => ({
@@ -444,7 +468,7 @@ export default function AdminProductDetails({ children }) {
               <Button
                 variant="ghost"
                 size="sm"
-                className="text-muted-foreground hover:bg-muted hover:text-foreground"
+                className="text-destructive hover:bg-destructive/10 hover:text-destructive font-medium"
                 onClick={() => setShowDeleteConfirm(true)}
               >
                 <Trash2 className="size-4" data-icon="inline-start" />
@@ -475,41 +499,39 @@ export default function AdminProductDetails({ children }) {
 
         <form
           onSubmit={handleSubmit(onSubmit)}
-          className="rounded-xl border border-border bg-card p-6 shadow-sm"
+          className="space-y-6"
         >
-          <div className="mb-4 flex items-center justify-between">
-            <h2 className="text-lg font-semibold text-foreground">Edit Product</h2>
+          {/* Header Action Bar */}
+          <div className="flex items-center justify-between rounded-2xl border border-border bg-card p-5 shadow-xs">
+            <div>
+              <h2 className="text-lg font-bold text-foreground">Edit Product</h2>
+              <p className="text-xs text-muted-foreground">Update product specifications, inventory, variants, and media</p>
+            </div>
             <Button
               type="submit"
               disabled={updateMutation.isPending}
-              className="rounded-lg"
+              className="rounded-xl px-6 font-bold shadow-sm"
             >
-              <Save className="size-4" data-icon="inline-start" />
-              {updateMutation.isPending ? "Saving..." : "Save Changes"}
+              <Save className="size-4 mr-1.5" />
+              {updateMutation.isPending ? "Saving Changes..." : "Save Changes"}
             </Button>
           </div>
 
-          <div className="space-y-4">
+          {/* CARD 1: Basic Information */}
+          <div className="rounded-2xl border border-border bg-card p-6 shadow-xs space-y-4">
+            <div className="flex items-center gap-2 border-b border-border/60 pb-3 text-sm font-bold text-foreground">
+              <Package className="size-4 text-primary" />
+              <span>Basic Information</span>
+            </div>
             <div className="grid gap-4 sm:grid-cols-2">
               <div className="sm:col-span-2">
-                <label className="mb-1 block text-sm font-medium text-foreground">Title</label>
+                <label className="mb-1.5 block text-xs font-semibold text-foreground">Title *</label>
                 <Input {...register("title")} placeholder="Product title" className={errors.title ? "border-destructive" : ""} />
                 {errors.title && <p className="mt-1 text-xs text-destructive">{errors.title.message}</p>}
               </div>
 
-              <div className="sm:col-span-2">
-                <label className="mb-1 block text-sm font-medium text-foreground">Description</label>
-                <textarea
-                  {...register("description")}
-                  rows={4}
-                  placeholder="Product description"
-                  className={`w-full rounded-lg border border-border bg-background px-3 py-2 text-sm outline-none focus:border-ring ${errors.description ? "border-destructive" : ""}`}
-                />
-                {errors.description && <p className="mt-1 text-xs text-destructive">{errors.description.message}</p>}
-              </div>
-
               <div>
-                <label className="mb-1 block text-sm font-medium text-foreground">Category</label>
+                <label className="mb-1.5 block text-xs font-semibold text-foreground">Category *</label>
                 <select
                   {...register("category")}
                   className={`w-full rounded-lg border border-border bg-background px-3 py-2 text-sm outline-none focus:border-ring ${errors.category ? "border-destructive" : ""}`}
@@ -523,157 +545,220 @@ export default function AdminProductDetails({ children }) {
               </div>
 
               <div>
-                <label className="mb-1 block text-sm font-medium text-foreground">Brand</label>
+                <label className="mb-1.5 block text-xs font-semibold text-foreground">Brand</label>
                 <Input {...register("brand")} placeholder="Brand name" />
               </div>
 
-              {/* Dynamic Category Attributes Block */}
-              {currentCategoryAttributes.length > 0 ? (
-                <div className="sm:col-span-2 space-y-4 rounded-xl border border-border p-4 bg-muted/20">
-                  <h3 className="text-sm font-bold text-foreground">Category Attributes & Specs</h3>
-                  <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
-                    {currentCategoryAttributes.map((attr) => {
-                      const isSizeAttr = attr.key === "sizes" || attr.key === "size" || (attr.type === "multi-select" && attr.label.toLowerCase().includes("size"));
-                      if (isSizeAttr) {
-                        const optionsList = (attr.options && attr.options.length > 0) ? attr.options : AVAILABLE_SIZES;
-                        return (
-                          <div key={attr.key} className="sm:col-span-2 space-y-2">
-                            <label className="text-xs font-semibold text-foreground">{attr.label} {attr.required && "*"}</label>
-                            <div className="flex flex-wrap gap-2">
-                              {optionsList.map((size) => (
-                                <button
-                                  key={size}
-                                  type="button"
-                                  onClick={() => {
-                                    setSelectedSizes((prev) =>
-                                      prev.includes(size) ? prev.filter((s) => s !== size) : [...prev, size]
-                                    );
-                                  }}
-                                  className={`rounded-lg border px-3 py-1.5 text-xs font-medium transition-colors ${
-                                    selectedSizes.includes(size)
-                                      ? "border-foreground bg-foreground text-background"
-                                      : "border-border bg-background text-foreground hover:border-muted-foreground"
+              <div className="sm:col-span-2">
+                <label className="mb-1.5 block text-xs font-semibold text-foreground">Description *</label>
+                <textarea
+                  {...register("description")}
+                  rows={4}
+                  placeholder="Detailed product description..."
+                  className={`w-full rounded-lg border border-border bg-background px-3 py-2 text-sm outline-none focus:border-ring ${errors.description ? "border-destructive" : ""}`}
+                />
+                {errors.description && <p className="mt-1 text-xs text-destructive">{errors.description.message}</p>}
+              </div>
+            </div>
+          </div>
+
+          {/* CARD 2: Pricing & Inventory */}
+          <div className="rounded-2xl border border-border bg-card p-6 shadow-xs space-y-4">
+            <div className="flex items-center gap-2 border-b border-border/60 pb-3 text-sm font-bold text-foreground">
+              <Tag className="size-4 text-primary" />
+              <span>Pricing & Stock</span>
+            </div>
+            <div className="grid gap-4 sm:grid-cols-2 lg:grid-cols-4">
+              <div>
+                <label className="mb-1.5 block text-xs font-semibold text-foreground">Price (৳) *</label>
+                <Input {...register("price")} type="number" step="0.01" placeholder="৳0.00" className={errors.price ? "border-destructive" : ""} />
+                {errors.price && <p className="mt-1 text-xs text-destructive">{errors.price.message}</p>}
+              </div>
+
+              <div>
+                <label className="mb-1.5 block text-xs font-semibold text-foreground">Discount (%)</label>
+                <Input {...register("discountPercentage")} type="number" step="0.1" min="0" max="100" placeholder="0" />
+              </div>
+
+              <div>
+                <label className="mb-1.5 block text-xs font-semibold text-foreground">Stock *</label>
+                <Input {...register("stock")} type="number" min="0" placeholder="0" className={errors.stock ? "border-destructive" : ""} />
+                {errors.stock && <p className="mt-1 text-xs text-destructive">{errors.stock.message}</p>}
+              </div>
+
+              <div>
+                <label className="mb-1.5 block text-xs font-semibold text-foreground">Min Order Qty</label>
+                <Input {...register("minimumOrderQuantity")} type="number" min="1" placeholder="1" />
+              </div>
+
+              <div>
+                <label className="mb-1.5 block text-xs font-semibold text-foreground">Weight (g)</label>
+                <Input {...register("weight")} type="number" step="0.1" placeholder="0" />
+              </div>
+
+              <div className="lg:col-span-3">
+                <label className="mb-1.5 block text-xs font-semibold text-foreground">Tags (comma separated)</label>
+                <Input {...register("tags")} placeholder="e.g. shirt, cotton, casual, summer" />
+              </div>
+            </div>
+          </div>
+
+          {/* CARD 3: Specifications, Sizes & Variants */}
+          <div className="rounded-2xl border border-border bg-card p-6 shadow-xs space-y-4">
+            <div className="flex items-center gap-2 border-b border-border/60 pb-3 text-sm font-bold text-foreground">
+              <Sliders className="size-4 text-primary" />
+              <span>Specifications, Sizes & Variants</span>
+            </div>
+
+            {/* Dynamic Category Attributes */}
+            {currentCategoryAttributes.length > 0 ? (
+              <div className="space-y-4 rounded-xl border border-border p-4 bg-muted/20">
+                <h4 className="text-xs font-bold tracking-wide uppercase text-muted-foreground">Category Attributes</h4>
+                <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
+                  {currentCategoryAttributes.map((attr) => {
+                    const isSizeAttr = attr.key === "sizes" || attr.key === "size" || (attr.type === "multi-select" && attr.label.toLowerCase().includes("size"));
+                    if (isSizeAttr) {
+                      const optionsList = (attr.options && attr.options.length > 0) ? attr.options : AVAILABLE_SIZES;
+                      return (
+                        <div key={attr.key} className="sm:col-span-2 space-y-2">
+                          <label className="text-xs font-semibold text-foreground">{attr.label} {attr.required && "*"}</label>
+                          <div className="flex flex-wrap gap-2">
+                            {optionsList.map((size) => (
+                              <button
+                                key={size}
+                                type="button"
+                                onClick={() => {
+                                  setSelectedSizes((prev) =>
+                                    prev.includes(size) ? prev.filter((s) => s !== size) : [...prev, size]
+                                  );
+                                }}
+                                className={`rounded-lg border px-3 py-1.5 text-xs font-medium transition-colors ${selectedSizes.includes(size)
+                                    ? "border-primary bg-primary text-primary-foreground font-bold shadow-xs"
+                                    : "border-border bg-background text-foreground hover:border-muted-foreground"
                                   }`}
-                                >
-                                  {size}
-                                </button>
-                              ))}
-                            </div>
+                              >
+                                {size}
+                              </button>
+                            ))}
                           </div>
-                        );
-                      }
+                        </div>
+                      );
+                    }
 
-                      if (attr.type === "select") {
-                        return (
-                          <div key={attr.key} className="space-y-1">
-                            <label className="text-xs font-medium text-foreground">{attr.label} {attr.unit ? `(${attr.unit})` : ''} {attr.required && "*"}</label>
-                            <select
-                              value={dynamicAttributes[attr.key] || ""}
-                              onChange={(e) => setDynamicAttributes(prev => ({ ...prev, [attr.key]: e.target.value }))}
-                              className="w-full rounded-lg border border-border bg-background px-3 py-2 text-xs outline-none focus:border-ring"
-                            >
-                              <option value="">Select {attr.label}</option>
-                              {attr.options?.map((opt) => (
-                                <option key={opt} value={opt}>{opt}</option>
-                              ))}
-                            </select>
-                          </div>
-                        );
-                      }
-
-                      if (attr.type === "multi-select") {
-                        const selectedValues = Array.isArray(dynamicAttributes[attr.key]) ? dynamicAttributes[attr.key] : [];
-                        return (
-                          <div key={attr.key} className="sm:col-span-2 space-y-2">
-                            <label className="text-xs font-medium text-foreground">{attr.label} {attr.required && "*"}</label>
-                            <div className="flex flex-wrap gap-2">
-                              {attr.options?.map((opt) => {
-                                const isSelected = selectedValues.includes(opt);
-                                return (
-                                  <button
-                                    key={opt}
-                                    type="button"
-                                    onClick={() => {
-                                      const next = isSelected ? selectedValues.filter(v => v !== opt) : [...selectedValues, opt];
-                                      setDynamicAttributes(prev => ({ ...prev, [attr.key]: next }));
-                                    }}
-                                    className={`rounded-lg border px-3 py-1 text-xs font-medium transition-colors ${
-                                      isSelected
-                                        ? "border-foreground bg-foreground text-background"
-                                        : "border-border bg-background text-foreground hover:border-muted-foreground"
-                                    }`}
-                                  >
-                                    {opt}
-                                  </button>
-                                );
-                              })}
-                            </div>
-                          </div>
-                        );
-                      }
-
-                      if (attr.type === "boolean") {
-                        return (
-                          <div key={attr.key} className="flex items-center gap-2 pt-4">
-                            <input
-                              type="checkbox"
-                              id={`edit-attr-${attr.key}`}
-                              checked={Boolean(dynamicAttributes[attr.key])}
-                              onChange={(e) => setDynamicAttributes(prev => ({ ...prev, [attr.key]: e.target.checked }))}
-                              className="rounded border-border"
-                            />
-                            <label htmlFor={`edit-attr-${attr.key}`} className="text-xs font-medium text-foreground cursor-pointer">
-                              {attr.label}
-                            </label>
-                          </div>
-                        );
-                      }
-
+                    if (attr.type === "select") {
                       return (
                         <div key={attr.key} className="space-y-1">
                           <label className="text-xs font-medium text-foreground">{attr.label} {attr.unit ? `(${attr.unit})` : ''} {attr.required && "*"}</label>
-                          <Input
-                            type={attr.type === "number" ? "number" : "text"}
-                            placeholder={`Enter ${attr.label}`}
+                          <select
                             value={dynamicAttributes[attr.key] || ""}
                             onChange={(e) => setDynamicAttributes(prev => ({ ...prev, [attr.key]: e.target.value }))}
-                            className="h-9 text-xs"
-                          />
-                        </div>
-                      );
-                    })}
-                  </div>
-
-                  {/* Size Measurements Chart Builder */}
-                  {selectedSizes.length > 0 && (
-                    <div className="space-y-4 rounded-lg border border-border p-4 bg-background">
-                      <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-2 border-b border-border/50 pb-3">
-                        <label className="block text-sm font-bold text-foreground">Size Measurements (Inches)</label>
-                        <div className="flex items-center gap-2">
-                          <span className="text-xs font-semibold text-muted-foreground">Type:</span>
-                          <select
-                            value={measurementPreset}
-                            onChange={(e) => setMeasurementPreset(e.target.value)}
-                            className="rounded-md border border-border bg-background px-2.5 py-1 text-xs outline-none focus:border-ring font-medium"
+                            className="w-full rounded-lg border border-border bg-background px-3 py-2 text-xs outline-none focus:border-ring"
                           >
-                            {Object.entries(MEASUREMENT_PRESETS).map(([key, preset]) => (
-                              <option key={key} value={key}>
-                                {preset.label}
-                              </option>
+                            <option value="">Select {attr.label}</option>
+                            {attr.options?.map((opt) => (
+                              <option key={opt} value={opt}>{opt}</option>
                             ))}
                           </select>
                         </div>
-                      </div>
+                      );
+                    }
 
+                    if (attr.type === "multi-select") {
+                      const selectedValues = Array.isArray(dynamicAttributes[attr.key]) ? dynamicAttributes[attr.key] : [];
+                      return (
+                        <div key={attr.key} className="sm:col-span-2 space-y-2">
+                          <label className="text-xs font-medium text-foreground">{attr.label} {attr.required && "*"}</label>
+                          <div className="flex flex-wrap gap-2">
+                            {attr.options?.map((opt) => {
+                              const isSelected = selectedValues.includes(opt);
+                              return (
+                                <button
+                                  key={opt}
+                                  type="button"
+                                  onClick={() => {
+                                    const next = isSelected ? selectedValues.filter(v => v !== opt) : [...selectedValues, opt];
+                                    setDynamicAttributes(prev => ({ ...prev, [attr.key]: next }));
+                                  }}
+                                  className={`rounded-lg border px-3 py-1 text-xs font-medium transition-colors ${isSelected
+                                      ? "border-primary bg-primary text-primary-foreground font-bold shadow-xs"
+                                      : "border-border bg-background text-foreground hover:border-muted-foreground"
+                                    }`}
+                                >
+                                  {opt}
+                                </button>
+                              );
+                            })}
+                          </div>
+                        </div>
+                      );
+                    }
+
+                    if (attr.type === "boolean") {
+                      return (
+                        <div key={attr.key} className="flex items-center gap-2 pt-2">
+                          <input
+                            type="checkbox"
+                            id={`edit-attr-${attr.key}`}
+                            checked={Boolean(dynamicAttributes[attr.key])}
+                            onChange={(e) => setDynamicAttributes(prev => ({ ...prev, [attr.key]: e.target.checked }))}
+                            className="rounded border-border size-4 accent-primary"
+                          />
+                          <label htmlFor={`edit-attr-${attr.key}`} className="text-xs font-medium text-foreground cursor-pointer">
+                            {attr.label}
+                          </label>
+                        </div>
+                      );
+                    }
+
+                    return (
+                      <div key={attr.key} className="space-y-1">
+                        <label className="text-xs font-medium text-foreground">{attr.label} {attr.unit ? `(${attr.unit})` : ''} {attr.required && "*"}</label>
+                        <Input
+                          type={attr.type === "number" ? "number" : "text"}
+                          placeholder={`Enter ${attr.label}`}
+                          value={dynamicAttributes[attr.key] || ""}
+                          onChange={(e) => setDynamicAttributes(prev => ({ ...prev, [attr.key]: e.target.value }))}
+                          className="h-9 text-xs"
+                        />
+                      </div>
+                    );
+                  })}
+                </div>
+
+                {/* Size Measurements Chart Builder */}
+                {selectedSizes.length > 0 && (
+                  <div className="space-y-4 rounded-xl border border-border p-4 bg-background">
+                    <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-2 border-b border-border/50 pb-3">
+                      <div>
+                        <label className="block text-xs font-bold text-foreground">Size Measurements Chart Builder</label>
+                        <p className="text-[11px] text-muted-foreground">Enter garment measurements per size in inches</p>
+                      </div>
+                      <div className="flex items-center gap-2">
+                        <span className="text-xs font-semibold text-muted-foreground">Preset:</span>
+                        <select
+                          value={measurementPreset}
+                          onChange={(e) => setMeasurementPreset(e.target.value)}
+                          className="rounded-lg border border-border bg-background px-2.5 py-1 text-xs outline-none focus:border-ring font-medium"
+                        >
+                          {Object.entries(MEASUREMENT_PRESETS).map(([key, preset]) => (
+                            <option key={key} value={key}>
+                              {preset.label}
+                            </option>
+                          ))}
+                        </select>
+                      </div>
+                    </div>
+
+                    <div className="space-y-3">
                       {selectedSizes.map((size) => {
                         const activeFields = MEASUREMENT_PRESETS[measurementPreset]?.fields || [];
                         return (
-                          <div key={size} className="flex flex-col gap-2 rounded-lg border border-border/60 bg-muted/20 p-3">
-                            <div className="w-12 font-bold text-xs bg-foreground text-background text-center py-1 rounded">{size}</div>
-                            <div className="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-4 gap-2">
+                          <div key={size} className="flex flex-col sm:flex-row items-start sm:items-center gap-3 rounded-xl border border-border/60 bg-muted/20 p-3">
+                            <div className="size-9 shrink-0 font-bold text-xs bg-primary text-primary-foreground rounded-lg flex items-center justify-center shadow-xs">{size}</div>
+                            <div className="grid grid-cols-2 sm:grid-cols-4 gap-2 flex-1 w-full">
                               {activeFields.map((f) => (
                                 <div key={f.key} className="space-y-1">
-                                  <label className="text-[11px] font-medium text-muted-foreground block">{f.label}</label>
+                                  <label className="text-[11px] font-medium text-muted-foreground block truncate">{f.label}</label>
                                   <Input
                                     placeholder={f.placeholder}
                                     value={sizeMeasurements[size]?.[f.key] || ""}
@@ -683,7 +768,7 @@ export default function AdminProductDetails({ children }) {
                                         [size]: { ...prev[size], [f.key]: e.target.value },
                                       }))
                                     }
-                                    className="h-8 text-xs"
+                                    className="h-8 text-xs bg-background"
                                   />
                                 </div>
                               ))}
@@ -692,12 +777,14 @@ export default function AdminProductDetails({ children }) {
                         );
                       })}
                     </div>
-                  )}
-                </div>
-              ) : (
-                <div className="sm:col-span-2">
-                  <label className="mb-1 block text-sm font-medium text-foreground">Available Sizes (Optional)</label>
-                  <div className="flex flex-wrap gap-2 mb-4">
+                  </div>
+                )}
+              </div>
+            ) : (
+              <div className="space-y-4">
+                <div>
+                  <label className="mb-2 block text-xs font-semibold text-foreground">Available Sizes (Select sizes for this product)</label>
+                  <div className="flex flex-wrap gap-2">
                     {AVAILABLE_SIZES.map((size) => (
                       <button
                         key={size}
@@ -709,45 +796,50 @@ export default function AdminProductDetails({ children }) {
                               : [...prev, size]
                           );
                         }}
-                        className={`rounded-lg border px-3 py-1.5 text-xs font-medium transition-colors ${
-                          selectedSizes.includes(size)
-                            ? "border-foreground bg-foreground text-background"
+                        className={`rounded-lg border px-3 py-1.5 text-xs font-medium transition-colors ${selectedSizes.includes(size)
+                            ? "border-primary bg-primary text-primary-foreground font-bold shadow-xs"
                             : "border-border bg-background text-foreground hover:border-muted-foreground"
-                        }`}
+                          }`}
                       >
                         {size}
                       </button>
                     ))}
                   </div>
-                  {selectedSizes.length > 0 && (
-                    <div className="space-y-4 rounded-lg border border-border p-4 bg-muted/30">
-                      <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-2 border-b border-border/50 pb-3">
-                        <label className="block text-sm font-bold text-foreground">Size Measurements (Inches)</label>
-                        <div className="flex items-center gap-2">
-                          <span className="text-xs font-semibold text-muted-foreground">Type:</span>
-                          <select
-                            value={measurementPreset}
-                            onChange={(e) => setMeasurementPreset(e.target.value)}
-                            className="rounded-md border border-border bg-background px-2.5 py-1 text-xs outline-none focus:border-ring font-medium"
-                          >
-                            {Object.entries(MEASUREMENT_PRESETS).map(([key, preset]) => (
-                              <option key={key} value={key}>
-                                {preset.label}
-                              </option>
-                            ))}
-                          </select>
-                        </div>
-                      </div>
+                </div>
 
+                {selectedSizes.length > 0 && (
+                  <div className="space-y-4 rounded-xl border border-border p-4 bg-muted/20">
+                    <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-2 border-b border-border/50 pb-3">
+                      <div>
+                        <label className="block text-xs font-bold text-foreground">Size Measurements Chart Builder</label>
+                        <p className="text-[11px] text-muted-foreground">Enter garment measurements per size in inches</p>
+                      </div>
+                      <div className="flex items-center gap-2">
+                        <span className="text-xs font-semibold text-muted-foreground">Preset:</span>
+                        <select
+                          value={measurementPreset}
+                          onChange={(e) => setMeasurementPreset(e.target.value)}
+                          className="rounded-lg border border-border bg-background px-2.5 py-1 text-xs outline-none focus:border-ring font-medium"
+                        >
+                          {Object.entries(MEASUREMENT_PRESETS).map(([key, preset]) => (
+                            <option key={key} value={key}>
+                              {preset.label}
+                            </option>
+                          ))}
+                        </select>
+                      </div>
+                    </div>
+
+                    <div className="space-y-3">
                       {selectedSizes.map((size) => {
                         const activeFields = MEASUREMENT_PRESETS[measurementPreset]?.fields || [];
                         return (
-                          <div key={size} className="flex flex-col gap-2 rounded-lg border border-border/60 bg-background p-3">
-                            <div className="w-12 font-bold text-xs bg-foreground text-background text-center py-1 rounded">{size}</div>
-                            <div className="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-4 gap-2">
+                          <div key={size} className="flex flex-col sm:flex-row items-start sm:items-center gap-3 rounded-xl border border-border/60 bg-background p-3">
+                            <div className="size-9 shrink-0 font-bold text-xs bg-primary text-primary-foreground rounded-lg flex items-center justify-center shadow-xs">{size}</div>
+                            <div className="grid grid-cols-2 sm:grid-cols-4 gap-2 flex-1 w-full">
                               {activeFields.map((f) => (
                                 <div key={f.key} className="space-y-1">
-                                  <label className="text-[11px] font-medium text-muted-foreground block">{f.label}</label>
+                                  <label className="text-[11px] font-medium text-muted-foreground block truncate">{f.label}</label>
                                   <Input
                                     placeholder={f.placeholder}
                                     value={sizeMeasurements[size]?.[f.key] || ""}
@@ -766,109 +858,111 @@ export default function AdminProductDetails({ children }) {
                         );
                       })}
                     </div>
-                  )}
+                  </div>
+                )}
+              </div>
+            )}
+
+            {/* Color Family Variants */}
+            <div className="space-y-3 rounded-xl border border-border p-4 bg-muted/10">
+              <div>
+                <label className="block text-xs font-bold text-foreground">Color Variants (Color Family with Image)</label>
+                <p className="text-[11px] text-muted-foreground">Add color name and optionally attach a color swatch/product variant image</p>
+              </div>
+              <div className="flex flex-col sm:flex-row gap-2 items-start sm:items-center">
+                <Input
+                  placeholder="Color name (e.g. Navy Blue, Olive Green)"
+                  value={colorNameInput}
+                  onChange={(e) => setColorNameInput(e.target.value)}
+                  className="flex-1 text-xs"
+                />
+                <input
+                  type="file"
+                  accept="image/*"
+                  ref={colorInputRef}
+                  className="hidden"
+                  onChange={(e) => {
+                    const file = e.target.files?.[0];
+                    if (file) {
+                      setColorFile(file);
+                      setColorPreview(URL.createObjectURL(file));
+                    }
+                  }}
+                />
+                <Button
+                  type="button"
+                  variant="outline"
+                  onClick={() => colorInputRef.current?.click()}
+                  className="shrink-0 text-xs rounded-lg"
+                >
+                  <Camera className="size-3.5 mr-1" />
+                  {colorPreview ? "Image Selected" : "Upload Color Image"}
+                </Button>
+                <Button
+                  type="button"
+                  onClick={handleAddColorVariant}
+                  className="shrink-0 text-xs rounded-lg"
+                >
+                  Add Variant
+                </Button>
+              </div>
+              {colorPreview && (
+                <div className="flex items-center gap-2 pt-1">
+                  <img src={colorPreview} alt="Color preview" className="size-10 rounded-lg border object-cover shadow-xs" />
+                  <span className="text-xs text-muted-foreground">Image preview for {colorNameInput || "new color"}</span>
                 </div>
               )}
 
-              <div className="sm:col-span-2 space-y-3 rounded-lg border border-border p-4 bg-muted/20">
-                <label className="block text-sm font-medium text-foreground">Color Variants (Color Family with Image)</label>
-                <div className="flex flex-col sm:flex-row gap-2 items-start sm:items-center">
-                  <Input
-                    placeholder="Color name (e.g. Orange, Navy Blue)"
-                    value={colorNameInput}
-                    onChange={(e) => setColorNameInput(e.target.value)}
-                    className="flex-1"
-                  />
-                  <input
-                    type="file"
-                    accept="image/*"
-                    ref={colorInputRef}
-                    className="hidden"
-                    onChange={(e) => {
-                      const file = e.target.files?.[0];
-                      if (file) {
-                        setColorFile(file);
-                        setColorPreview(URL.createObjectURL(file));
-                      }
-                    }}
-                  />
-                  <Button
-                    type="button"
-                    variant="outline"
-                    onClick={() => colorInputRef.current?.click()}
-                    className="shrink-0 text-xs"
-                  >
-                    <Camera className="size-3.5 mr-1" />
-                    {colorPreview ? "Change Image" : "Upload Color Image"}
-                  </Button>
-                  <Button
-                    type="button"
-                    onClick={handleAddColorVariant}
-                    className="shrink-0 text-xs"
-                  >
-                    Add Variant
-                  </Button>
+              {colorVariants.length > 0 && (
+                <div className="mt-3 flex flex-wrap gap-2.5 pt-2 border-t border-border/50">
+                  {colorVariants.map((c, index) => (
+                    <div key={index} className="flex items-center gap-2 rounded-xl border border-border bg-background p-1.5 pr-3 shadow-xs">
+                      <img src={c.image} alt={c.name} className="size-8 rounded-lg object-cover border" />
+                      <span className="text-xs font-semibold text-foreground">{c.name}</span>
+                      <button
+                        type="button"
+                        onClick={() => handleRemoveColorVariant(index)}
+                        className="ml-1 flex size-5 items-center justify-center rounded-full text-destructive hover:bg-destructive/15 transition-colors"
+                        title="Remove color variant"
+                      >
+                        <X className="size-3.5" />
+                      </button>
+                    </div>
+                  ))}
                 </div>
-                {colorPreview && (
-                  <div className="flex items-center gap-2 pt-1">
-                    <img src={colorPreview} alt="Color preview" className="size-10 rounded border object-cover" />
-                    <span className="text-xs text-muted-foreground">Image selected for {colorNameInput || "new color"}</span>
-                  </div>
-                )}
+              )}
+            </div>
 
-                {colorVariants.length > 0 && (
-                  <div className="mt-3 flex flex-wrap gap-3 pt-2 border-t border-border">
-                    {colorVariants.map((c, index) => (
-                      <div key={index} className="flex items-center gap-2 rounded-lg border border-border bg-background p-1.5 pr-3 shadow-sm">
-                        <img src={c.image} alt={c.name} className="size-9 rounded object-cover border" />
-                        <span className="text-xs font-semibold text-foreground">{c.name}</span>
-                        <button
-                          type="button"
-                          onClick={() => handleRemoveColorVariant(index)}
-                          className="ml-1 text-muted-foreground hover:text-destructive"
-                        >
-                          <X className="size-3.5" />
-                        </button>
-                      </div>
-                    ))}
-                  </div>
-                )}
+            {/* Policy and Logistics */}
+            <div className="grid gap-4 sm:grid-cols-3 pt-2">
+              <div>
+                <label className="mb-1.5 block text-xs font-semibold text-foreground">Warranty Info</label>
+                <Input {...register("warrantyInformation")} placeholder="e.g. 1 Year Warranty" />
               </div>
 
               <div>
-                <label className="mb-1 block text-sm font-medium text-foreground">Price in BDT</label>
-                <Input {...register("price")} type="number" step="0.01" placeholder="৳0" className={errors.price ? "border-destructive" : ""} />
-                {errors.price && <p className="mt-1 text-xs text-destructive">{errors.price.message}</p>}
+                <label className="mb-1.5 block text-xs font-semibold text-foreground">Shipping Info</label>
+                <Input {...register("shippingInformation")} placeholder="e.g. Delivery within 2-3 days" />
               </div>
 
               <div>
-                <label className="mb-1 block text-sm font-medium text-foreground">Discount %</label>
-                <Input {...register("discountPercentage")} type="number" step="0.1" min="0" max="100" placeholder="0" />
+                <label className="mb-1.5 block text-xs font-semibold text-foreground">Return Policy</label>
+                <Input {...register("returnPolicy")} placeholder="e.g. 7 Days Return Policy" />
               </div>
+            </div>
+          </div>
 
+          {/* CARD 4: Product Media */}
+          <div className="rounded-2xl border border-border bg-card p-6 shadow-xs space-y-4">
+            <div className="flex items-center gap-2 border-b border-border/60 pb-3 text-sm font-bold text-foreground">
+              <ImagePlus className="size-4 text-primary" />
+              <span>Product Media</span>
+            </div>
+
+            <div className="grid gap-6 sm:grid-cols-2">
+              {/* Thumbnail Image */}
               <div>
-                <label className="mb-1 block text-sm font-medium text-foreground">Stock</label>
-                <Input {...register("stock")} type="number" min="0" placeholder="0" className={errors.stock ? "border-destructive" : ""} />
-                {errors.stock && <p className="mt-1 text-xs text-destructive">{errors.stock.message}</p>}
-              </div>
-
-              <div>
-                <label className="mb-1 block text-sm font-medium text-foreground">Weight (g)</label>
-                <Input {...register("weight")} type="number" step="0.1" placeholder="0" />
-              </div>
-
-              <div>
-                <label className="mb-1 block text-sm font-medium text-foreground">Min Order Qty</label>
-                <Input {...register("minimumOrderQuantity")} type="number" min="1" placeholder="1" />
-              </div>
-
-              <div className="sm:col-span-2">
-                <label className="mb-1 block text-sm font-medium text-foreground">Tags (comma separated)</label>
-                <Input {...register("tags")} placeholder="e.g. wireless, bluetooth" />
-              </div>
-
-              <div className="sm:col-span-2">
-                <label className="mb-1 block text-sm font-medium text-foreground">Thumbnail</label>
+                <label className="mb-2 block text-xs font-semibold text-foreground">Main Thumbnail Image</label>
                 <input
                   ref={thumbnailInputRef}
                   type="file"
@@ -895,24 +989,33 @@ export default function AdminProductDetails({ children }) {
                       setThumbnailPreview(URL.createObjectURL(file));
                     }
                   }}
-                  className={`flex cursor-pointer items-center gap-3 rounded-lg border border-dashed p-3 transition-colors hover:border-muted-foreground/50 ${thumbnailDrag ? "border-primary bg-primary/5" : "border-border"}`}
+                  className={`flex min-h-[140px] cursor-pointer items-center justify-center gap-4 rounded-xl border-2 border-dashed p-4 transition-all duration-200 hover:border-primary/50 hover:bg-primary/5 ${thumbnailDrag ? "border-primary bg-primary/10 scale-[1.01]" : "border-border bg-muted/10"}`}
                 >
                   {(thumbnailPreview || product.thumbnail) ? (
-                    <img src={thumbnailPreview || product.thumbnail} alt="Thumbnail" className="size-16 rounded-lg object-cover" />
+                    <div className="flex items-center gap-3">
+                      <img src={thumbnailPreview || product.thumbnail} alt="Thumbnail" className="size-24 rounded-xl object-cover ring-2 ring-primary/20 shadow-xs" />
+                      <div className="text-xs">
+                        <span className="font-semibold text-primary block">Thumbnail Active</span>
+                        <span className="text-muted-foreground block text-[11px] mt-0.5">Click to replace image</span>
+                      </div>
+                    </div>
                   ) : (
-                    <div className="flex size-16 items-center justify-center rounded-lg bg-muted text-xs text-muted-foreground">
-                      Upload
+                    <div className="flex flex-col items-center gap-2 text-center p-2">
+                      <div className="flex size-10 items-center justify-center rounded-full bg-primary/10 text-primary">
+                        <Camera className="size-5" />
+                      </div>
+                      <div>
+                        <p className="text-xs font-semibold text-foreground">Upload Cover Image</p>
+                        <p className="text-[11px] text-muted-foreground mt-0.5">PNG, JPG up to 5MB</p>
+                      </div>
                     </div>
                   )}
-                  <div className="text-xs text-muted-foreground">
-                    <p className="font-medium text-foreground">Click to replace thumbnail</p>
-                    <p>PNG, JPG up to 5MB</p>
-                  </div>
                 </div>
               </div>
 
-              <div className="sm:col-span-2">
-                <label className="mb-1 block text-sm font-medium text-foreground">Images</label>
+              {/* Gallery Images */}
+              <div>
+                <label className="mb-2 block text-xs font-semibold text-foreground">Gallery Images (Multiple)</label>
                 <input
                   ref={imagesInputRef}
                   type="file"
@@ -921,8 +1024,9 @@ export default function AdminProductDetails({ children }) {
                   className="hidden"
                   onChange={(e) => {
                     const files = Array.from(e.target.files ?? []);
-                    setImageFiles(files);
-                    setImagePreviews(files.map((f) => URL.createObjectURL(f)));
+                    setImageFiles((prev) => [...prev, ...files]);
+                    setImagePreviews((prev) => [...prev, ...files.map((f) => URL.createObjectURL(f))]);
+                    e.target.value = "";
                   }}
                 />
                 <div
@@ -934,53 +1038,86 @@ export default function AdminProductDetails({ children }) {
                     setImagesDrag(false);
                     const files = Array.from(e.dataTransfer.files ?? []).filter((f) => f.type.startsWith("image/"));
                     if (files.length > 0) {
-                      setImageFiles(files);
-                      setImagePreviews(files.map((f) => URL.createObjectURL(f)));
+                      setImageFiles((prev) => [...prev, ...files]);
+                      setImagePreviews((prev) => [...prev, ...files.map((f) => URL.createObjectURL(f))]);
                     }
                   }}
-                  className={`cursor-pointer rounded-lg border border-dashed p-3 transition-colors hover:border-muted-foreground/50 ${imagesDrag ? "border-primary bg-primary/5" : "border-border"}`}
+                  className={`flex min-h-[140px] cursor-pointer items-center justify-center rounded-xl border-2 border-dashed p-4 transition-all duration-200 hover:border-primary/50 hover:bg-primary/5 ${imagesDrag ? "border-primary bg-primary/10 scale-[1.01]" : "border-border bg-muted/10"}`}
                 >
-                  {imagePreviews.length > 0 ? (
-                    <div className="flex flex-wrap gap-2">
-                      {imagePreviews.map((src, i) => (
-                        <img key={i} src={src} alt="" className="size-16 rounded-lg object-cover" />
-                      ))}
-                    </div>
-                  ) : product.images?.length > 0 ? (
-                    <div className="flex flex-wrap gap-2">
-                      {product.images.slice(0, 4).map((img, i) => (
-                        <img key={i} src={img} alt="" className="size-16 rounded-lg object-cover" />
-                      ))}
-                      {product.images.length > 4 && (
-                        <div className="flex size-16 items-center justify-center rounded-lg bg-muted text-xs text-muted-foreground">
-                          +{product.images.length - 4}
+                  {(existingImages.length > 0 || imagePreviews.length > 0) ? (
+                    <div className="flex flex-wrap gap-3">
+                      {/* Existing Product Images */}
+                      {existingImages.map((src, i) => (
+                        <div key={`existing-${i}`} className="relative group">
+                          <img src={src} alt="" className="size-16 rounded-xl object-cover ring-2 ring-border shadow-xs" />
+                          <button
+                            type="button"
+                            onClick={(e) => {
+                              e.stopPropagation();
+                              handleRemoveExistingImage(i);
+                            }}
+                            className="absolute -right-1.5 -top-1.5 flex size-5 items-center justify-center rounded-full bg-destructive text-destructive-foreground shadow-xs hover:scale-110 transition-transform"
+                            title="Delete image"
+                          >
+                            <X className="size-3" />
+                          </button>
                         </div>
-                      )}
+                      ))}
+                      {/* Newly Uploaded Images */}
+                      {imagePreviews.map((src, i) => (
+                        <div key={`new-${i}`} className="relative group">
+                          <img src={src} alt="" className="size-16 rounded-xl object-cover ring-2 ring-primary/40 shadow-xs" />
+                          <button
+                            type="button"
+                            onClick={(e) => {
+                              e.stopPropagation();
+                              handleRemoveNewImage(i);
+                            }}
+                            className="absolute -right-1.5 -top-1.5 flex size-5 items-center justify-center rounded-full bg-destructive text-destructive-foreground shadow-xs hover:scale-110 transition-transform"
+                            title="Remove image"
+                          >
+                            <X className="size-3" />
+                          </button>
+                        </div>
+                      ))}
+                      <div className="flex size-16 items-center justify-center rounded-xl border-2 border-dashed border-primary/40 bg-primary/5 text-primary transition-colors hover:bg-primary/10">
+                        <Plus className="size-5" />
+                      </div>
                     </div>
                   ) : (
-                    <div className="flex size-16 items-center justify-center rounded-lg bg-muted text-xs text-muted-foreground">
-                      Upload
+                    <div className="flex flex-col items-center gap-2 text-center p-2">
+                      <div className="flex size-10 items-center justify-center rounded-full bg-primary/10 text-primary">
+                        <ImagePlus className="size-5" />
+                      </div>
+                      <div>
+                        <p className="text-xs font-semibold text-foreground">Upload Product Gallery</p>
+                        <p className="text-[11px] text-muted-foreground mt-0.5">Select multiple images or drag & drop</p>
+                      </div>
                     </div>
                   )}
-                  <p className="mt-2 text-xs text-muted-foreground">Click to replace images (PNG, JPG)</p>
                 </div>
               </div>
-
-              <div>
-                <label className="mb-1 block text-sm font-medium text-foreground">Warranty</label>
-                <Input {...register("warrantyInformation")} placeholder="e.g. 1 year warranty" />
-              </div>
-
-              <div>
-                <label className="mb-1 block text-sm font-medium text-foreground">Shipping</label>
-                <Input {...register("shippingInformation")} placeholder="e.g. Free shipping" />
-              </div>
-
-              <div className="sm:col-span-2">
-                <label className="mb-1 block text-sm font-medium text-foreground">Return Policy</label>
-                <Input {...register("returnPolicy")} placeholder="e.g. 30 day returns" />
-              </div>
             </div>
+          </div>
+
+          {/* Bottom Action Bar */}
+          <div className="flex items-center justify-end gap-3 rounded-2xl border border-border bg-card p-4 shadow-xs">
+            <Button
+              type="button"
+              variant="outline"
+              onClick={() => router.push("/dashboard/products")}
+              className="rounded-xl"
+            >
+              Cancel
+            </Button>
+            <Button
+              type="submit"
+              disabled={updateMutation.isPending}
+              className="rounded-xl px-6 font-bold shadow-sm"
+            >
+              <Save className="size-4 mr-1.5" />
+              {updateMutation.isPending ? "Saving Changes..." : "Save Changes"}
+            </Button>
           </div>
         </form>
       </motion.div>

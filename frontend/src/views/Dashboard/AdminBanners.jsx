@@ -233,7 +233,7 @@ export default function AdminBanners({ children }) {
             >
               <button
                 onClick={() => setShowForm(false)}
-                className="absolute right-3 top-3 z-10 flex size-8 items-center justify-center rounded-full bg-background/80 text-foreground shadow-sm backdrop-blur-sm transition-colors hover:bg-background"
+                className="absolute right-3 top-3 z-10 flex size-8 items-center justify-center rounded-full bg-destructive/10 text-destructive shadow-sm backdrop-blur-sm transition-colors hover:bg-destructive hover:text-destructive-foreground"
               >
                 <X className="size-4" />
               </button>
@@ -279,7 +279,7 @@ export default function AdminBanners({ children }) {
                       <button
                         type="button"
                         onClick={() => { setCreateImage(""); setCreatePreview(""); }}
-                        className="absolute right-2 top-2 flex size-6 items-center justify-center rounded-full bg-black/60 text-white"
+                        className="absolute right-2 top-2 flex size-6 items-center justify-center rounded-full bg-destructive text-destructive-foreground hover:bg-destructive/90 shadow-sm transition-transform hover:scale-105"
                       >
                         <Trash2 className="size-3" />
                       </button>
@@ -340,7 +340,7 @@ export default function AdminBanners({ children }) {
                         </p>
                       </div>
                     </div>
-                    <div className="flex shrink-0 items-center gap-1 sm:gap-2">
+                    <div className="flex shrink-0 items-center justify-end gap-1 sm:gap-2 min-w-[140px]">
                       {!isDeleting && (
                         <Button
                           variant="ghost"
@@ -357,7 +357,7 @@ export default function AdminBanners({ children }) {
                             <Button
                               variant="ghost"
                               size="sm"
-                              className="text-muted-foreground hover:bg-muted hover:text-foreground"
+                              className="text-destructive hover:bg-destructive/10 hover:text-destructive"
                               disabled={editingId !== null}
                               onClick={() => setDeletingId(banner._id)}
                             >
@@ -436,7 +436,7 @@ export default function AdminBanners({ children }) {
                             <button
                               type="button"
                               onClick={() => { setEditImage(""); setEditPreview(""); }}
-                              className="absolute right-2 top-2 flex size-6 items-center justify-center rounded-full bg-black/60 text-white"
+                              className="absolute right-2 top-2 flex size-6 items-center justify-center rounded-full bg-destructive text-destructive-foreground hover:bg-destructive/90 shadow-sm transition-transform hover:scale-105"
                             >
                               <Trash2 className="size-3" />
                             </button>

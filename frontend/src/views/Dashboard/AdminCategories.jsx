@@ -409,7 +409,8 @@ export default function AdminCategories({ children }) {
                           <button
                             type="button"
                             onClick={() => createAttrRemove(index)}
-                            className="absolute right-2 top-2 text-muted-foreground hover:text-destructive"
+                            className="absolute right-2 top-2 text-destructive hover:bg-destructive/10 p-1 rounded-md transition-colors"
+                            title="Remove attribute"
                           >
                             <Trash2 className="size-4" />
                           </button>
@@ -502,7 +503,7 @@ export default function AdminCategories({ children }) {
                             type="button"
                             variant="ghost"
                             size="sm"
-                            className="mt-0.5 text-muted-foreground hover:bg-muted hover:text-foreground"
+                            className="mt-0.5 text-destructive hover:bg-destructive/10 hover:text-destructive"
                             onClick={() => createRemove(index)}
                           >
                             <Trash2 className="size-4" />
@@ -567,7 +568,7 @@ export default function AdminCategories({ children }) {
                         <p className="text-xs text-muted-foreground">/{cat.slug}</p>
                       </div>
                     </div>
-                    <div className="flex shrink-0 items-center gap-1 sm:gap-2">
+                    <div className="flex shrink-0 items-center justify-end gap-1 sm:gap-2 min-w-[140px]">
                       {!isDeleting && (
                         <Button
                           variant="ghost"
@@ -585,7 +586,7 @@ export default function AdminCategories({ children }) {
                             <Button
                               variant="ghost"
                               size="sm"
-                              className="text-muted-foreground hover:bg-muted hover:text-foreground"
+                              className="text-destructive hover:bg-destructive/10 hover:text-destructive"
                               disabled={editingId !== null}
                               onClick={() => setDeletingId(cat._id)}
                             >
@@ -700,7 +701,8 @@ export default function AdminCategories({ children }) {
                                 <button
                                   type="button"
                                   onClick={() => updateAttrRemove(index)}
-                                  className="absolute right-2 top-2 text-muted-foreground hover:text-destructive"
+                                  className="absolute right-2 top-2 text-destructive hover:bg-destructive/10 p-1 rounded-md transition-colors"
+                                  title="Remove attribute"
                                 >
                                   <Trash2 className="size-4" />
                                 </button>
@@ -793,7 +795,7 @@ export default function AdminCategories({ children }) {
                                   type="button"
                                   variant="ghost"
                                   size="sm"
-                                  className="mt-0.5 text-muted-foreground hover:bg-muted hover:text-foreground"
+                                  className="mt-0.5 text-destructive hover:bg-destructive/10 hover:text-destructive"
                                   onClick={() => updateRemove(index)}
                                 >
                                   <Trash2 className="size-4" />

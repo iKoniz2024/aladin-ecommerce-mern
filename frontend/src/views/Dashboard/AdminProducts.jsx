@@ -9,7 +9,7 @@ import { zodResolver } from "@hookform/resolvers/zod";
 import { z } from "zod";
 import { motion, AnimatePresence } from "framer-motion";
 import toast from "react-hot-toast";
-import { Plus, Eye, Trash2, X, Package, Camera, ImagePlus, Search, ChevronLeft, ChevronRight } from "lucide-react";
+import { Plus, Eye, Trash2, X, Package, Camera, ImagePlus, Search, ChevronLeft, ChevronRight, Tag, Sliders, Layers, Sparkles, ShieldCheck } from "lucide-react";
 
 import { getProducts, createProduct, deleteProduct } from "@/services/product.api";
 import { formatBDT } from "@/utils/currency";
@@ -268,20 +268,20 @@ export default function AdminProducts({ children }) {
 
   const toBase64 = (file) => compressImage(file);
 
-function resolveCategoryAttributes(selectedCategorySlug, categories) {
-  if (!selectedCategorySlug || !categories || !categories.length) return [];
-  for (const parent of categories) {
-    if (parent.slug === selectedCategorySlug) {
-      return parent.attributes || [];
-    }
-    for (const child of parent.children ?? []) {
-      if (child.slug === selectedCategorySlug || child.categories?.includes(selectedCategorySlug)) {
-        return (child.attributes && child.attributes.length > 0) ? child.attributes : (parent.attributes || []);
+  function resolveCategoryAttributes(selectedCategorySlug, categories) {
+    if (!selectedCategorySlug || !categories || !categories.length) return [];
+    for (const parent of categories) {
+      if (parent.slug === selectedCategorySlug) {
+        return parent.attributes || [];
+      }
+      for (const child of parent.children ?? []) {
+        if (child.slug === selectedCategorySlug || child.categories?.includes(selectedCategorySlug)) {
+          return (child.attributes && child.attributes.length > 0) ? child.attributes : (parent.attributes || []);
+        }
       }
     }
+    return [];
   }
-  return [];
-}
 
   const [dynamicAttributes, setDynamicAttributes] = useState({});
 
@@ -322,6 +322,11 @@ function resolveCategoryAttributes(selectedCategorySlug, categories) {
 
   const handleRemoveColorVariant = (index) => {
     setColorVariants((prev) => prev.filter((_, i) => i !== index));
+  };
+
+  const handleRemoveNewImage = (index) => {
+    setImageFiles((prev) => prev.filter((_, i) => i !== index));
+    setImagePreviews((prev) => prev.filter((_, i) => i !== index));
   };
 
   const onSubmit = async (formData) => {
@@ -458,60 +463,126 @@ function resolveCategoryAttributes(selectedCategorySlug, categories) {
               initial={{ opacity: 0, scale: 0.95, y: 20 }}
               animate={{ opacity: 1, scale: 1, y: 0 }}
               exit={{ opacity: 0, scale: 0.95, y: 20 }}
-              className="relative max-h-[90vh] w-full max-w-2xl overflow-y-auto rounded-2xl border border-border bg-background p-6 shadow-2xl"
+              className="relative max-h-[90vh] w-full max-w-4xl flex flex-col overflow-hidden rounded-2xl border border-border bg-background shadow-2xl"
               onClick={(e) => e.stopPropagation()}
             >
-              <button
-                onClick={() => setShowForm(false)}
-                className="absolute right-3 top-3 z-10 flex size-8 items-center justify-center rounded-full bg-background/80 text-foreground shadow-sm backdrop-blur-sm transition-colors hover:bg-background"
-              >
-                <X className="size-4" />
-              </button>
-
-              <h2 className="mb-6 text-lg font-semibold text-foreground">Add New Product</h2>
-
-              <form onSubmit={handleSubmit(onSubmit)} className="space-y-4">
-                <div className="grid gap-4 sm:grid-cols-2">
-                  <div className="sm:col-span-2">
-                    <label className="mb-1 block text-sm font-medium text-foreground">Title *</label>
-                    <Input {...register("title")} placeholder="Product title" className={errors.title ? "border-destructive" : ""} />
-                    {errors.title && <p className="mt-1 text-xs text-destructive">{errors.title.message}</p>}
+              {/* Modal Header */}
+              <div className="flex items-center justify-between border-b border-border bg-muted/30 px-6 py-4">
+                <div className="flex items-center gap-3">
+                  <div className="flex size-10 items-center justify-center rounded-xl bg-primary/10 text-primary">
+                    <Plus className="size-5" />
                   </div>
-
-                  <div className="sm:col-span-2">
-                    <label className="mb-1 block text-sm font-medium text-foreground">Description *</label>
-                    <textarea
-                      {...register("description")}
-                      rows={3}
-                      placeholder="Product description"
-                      className={`w-full rounded-lg border border-border bg-background px-3 py-2 text-sm outline-none focus:border-ring ${errors.description ? "border-destructive" : ""}`}
-                    />
-                    {errors.description && <p className="mt-1 text-xs text-destructive">{errors.description.message}</p>}
-                  </div>
-
                   <div>
-                    <label className="mb-1 block text-sm font-medium text-foreground">Category *</label>
-                    <select
-                      {...register("category")}
-                      className={`w-full rounded-lg border border-border bg-background px-3 py-2 text-sm outline-none focus:border-ring ${errors.category ? "border-destructive" : ""}`}
-                    >
-                      <option value="">Select category</option>
-                      {categorySlugs.map((slug) => (
-                        <option key={slug} value={slug}>{slug}</option>
-                      ))}
-                    </select>
-                    {errors.category && <p className="mt-1 text-xs text-destructive">{errors.category.message}</p>}
+                    <h2 className="text-lg font-bold text-foreground">Add New Product</h2>
+                    <p className="text-xs text-muted-foreground">Fill in the details below to add a new product to your store catalog</p>
+                  </div>
+                </div>
+                <button
+                  onClick={() => setShowForm(false)}
+                  className="flex size-8 items-center justify-center rounded-full text-destructive transition-colors hover:bg-destructive/10 hover:text-destructive"
+                >
+                  <X className="size-4" />
+                </button>
+              </div>
+
+              <form onSubmit={handleSubmit(onSubmit)} className="flex-1 overflow-y-auto p-6 space-y-6">
+                {/* CARD 1: Basic Information */}
+                <div className="rounded-2xl border border-border bg-card p-5 shadow-xs space-y-4">
+                  <div className="flex items-center gap-2 border-b border-border/60 pb-3 text-sm font-bold text-foreground">
+                    <Package className="size-4 text-primary" />
+                    <span>Basic Information</span>
+                  </div>
+                  <div className="grid gap-4 sm:grid-cols-2">
+                    <div className="sm:col-span-2">
+                      <label className="mb-1.5 block text-xs font-semibold text-foreground">Title *</label>
+                      <Input {...register("title")} placeholder="Product title (e.g. Premium Cotton Shirt)" className={errors.title ? "border-destructive" : ""} />
+                      {errors.title && <p className="mt-1 text-xs text-destructive">{errors.title.message}</p>}
+                    </div>
+
+                    <div>
+                      <label className="mb-1.5 block text-xs font-semibold text-foreground">Category *</label>
+                      <select
+                        {...register("category")}
+                        className={`w-full rounded-lg border border-border bg-background px-3 py-2 text-sm outline-none focus:border-ring ${errors.category ? "border-destructive" : ""}`}
+                      >
+                        <option value="">Select category</option>
+                        {categorySlugs.map((slug) => (
+                          <option key={slug} value={slug}>{slug}</option>
+                        ))}
+                      </select>
+                      {errors.category && <p className="mt-1 text-xs text-destructive">{errors.category.message}</p>}
+                    </div>
+
+                    <div>
+                      <label className="mb-1.5 block text-xs font-semibold text-foreground">Brand</label>
+                      <Input {...register("brand")} placeholder="Brand name (optional)" />
+                    </div>
+
+                    <div className="sm:col-span-2">
+                      <label className="mb-1.5 block text-xs font-semibold text-foreground">Description *</label>
+                      <textarea
+                        {...register("description")}
+                        rows={3}
+                        placeholder="Detailed product description..."
+                        className={`w-full rounded-lg border border-border bg-background px-3 py-2 text-sm outline-none focus:border-ring ${errors.description ? "border-destructive" : ""}`}
+                      />
+                      {errors.description && <p className="mt-1 text-xs text-destructive">{errors.description.message}</p>}
+                    </div>
+                  </div>
+                </div>
+
+                {/* CARD 2: Pricing & Inventory */}
+                <div className="rounded-2xl border border-border bg-card p-5 shadow-xs space-y-4">
+                  <div className="flex items-center gap-2 border-b border-border/60 pb-3 text-sm font-bold text-foreground">
+                    <Tag className="size-4 text-primary" />
+                    <span>Pricing & Stock</span>
+                  </div>
+                  <div className="grid gap-4 sm:grid-cols-2 lg:grid-cols-4">
+                    <div>
+                      <label className="mb-1.5 block text-xs font-semibold text-foreground">Price (৳) *</label>
+                      <Input {...register("price")} type="number" step="0.01" placeholder="৳0.00" className={errors.price ? "border-destructive" : ""} />
+                      {errors.price && <p className="mt-1 text-xs text-destructive">{errors.price.message}</p>}
+                    </div>
+
+                    <div>
+                      <label className="mb-1.5 block text-xs font-semibold text-foreground">Discount (%)</label>
+                      <Input {...register("discountPercentage")} type="number" step="0.1" min="0" max="100" placeholder="0" />
+                    </div>
+
+                    <div>
+                      <label className="mb-1.5 block text-xs font-semibold text-foreground">Stock *</label>
+                      <Input {...register("stock")} type="number" min="0" placeholder="0" className={errors.stock ? "border-destructive" : ""} />
+                      {errors.stock && <p className="mt-1 text-xs text-destructive">{errors.stock.message}</p>}
+                    </div>
+
+                    <div>
+                      <label className="mb-1.5 block text-xs font-semibold text-foreground">Min Order Qty</label>
+                      <Input {...register("minimumOrderQuantity")} type="number" min="1" placeholder="1" />
+                    </div>
+
+                    <div>
+                      <label className="mb-1.5 block text-xs font-semibold text-foreground">Weight (g)</label>
+                      <Input {...register("weight")} type="number" step="0.1" placeholder="0" />
+                    </div>
+
+                    <div className="lg:col-span-3">
+                      <label className="mb-1.5 block text-xs font-semibold text-foreground">Tags (comma separated)</label>
+                      <Input {...register("tags")} placeholder="e.g. shirt, cotton, casual, summer" />
+                    </div>
+                  </div>
+                </div>
+
+                {/* CARD 3: Category Specs & Variants */}
+                <div className="rounded-2xl border border-border bg-card p-5 shadow-xs space-y-4">
+                  <div className="flex items-center gap-2 border-b border-border/60 pb-3 text-sm font-bold text-foreground">
+                    <Sliders className="size-4 text-primary" />
+                    <span>Specifications, Sizes & Variants</span>
                   </div>
 
-                  <div>
-                    <label className="mb-1 block text-sm font-medium text-foreground">Brand</label>
-                    <Input {...register("brand")} placeholder="Brand name" />
-                  </div>
-
-                  {/* Dynamic Category Attributes Block */}
+                  {/* Category Specs if any */}
                   {currentCategoryAttributes.length > 0 ? (
-                    <div className="sm:col-span-2 space-y-4 rounded-xl border border-border p-4 bg-muted/20">
-                      <h3 className="text-sm font-bold text-foreground">Category Attributes & Specs</h3>
+                    <div className="space-y-4 rounded-xl border border-border p-4 bg-muted/20">
+                      <h4 className="text-xs font-bold tracking-wide uppercase text-muted-foreground">Category Attributes</h4>
                       <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
                         {currentCategoryAttributes.map((attr) => {
                           const isSizeAttr = attr.key === "sizes" || attr.key === "size" || (attr.type === "multi-select" && attr.label.toLowerCase().includes("size"));
@@ -530,11 +601,10 @@ function resolveCategoryAttributes(selectedCategorySlug, categories) {
                                           prev.includes(size) ? prev.filter((s) => s !== size) : [...prev, size]
                                         );
                                       }}
-                                      className={`rounded-lg border px-3 py-1.5 text-xs font-medium transition-colors ${
-                                        selectedSizes.includes(size)
-                                          ? "border-foreground bg-foreground text-background"
-                                          : "border-border bg-background text-foreground hover:border-muted-foreground"
-                                      }`}
+                                      className={`rounded-lg border px-3 py-1.5 text-xs font-medium transition-colors ${selectedSizes.includes(size)
+                                        ? "border-primary bg-primary text-primary-foreground font-bold shadow-xs"
+                                        : "border-border bg-background text-foreground hover:border-muted-foreground"
+                                        }`}
                                     >
                                       {size}
                                     </button>
@@ -578,11 +648,10 @@ function resolveCategoryAttributes(selectedCategorySlug, categories) {
                                           const next = isSelected ? selectedValues.filter(v => v !== opt) : [...selectedValues, opt];
                                           setDynamicAttributes(prev => ({ ...prev, [attr.key]: next }));
                                         }}
-                                        className={`rounded-lg border px-3 py-1 text-xs font-medium transition-colors ${
-                                          isSelected
-                                            ? "border-foreground bg-foreground text-background"
-                                            : "border-border bg-background text-foreground hover:border-muted-foreground"
-                                        }`}
+                                        className={`rounded-lg border px-3 py-1 text-xs font-medium transition-colors ${isSelected
+                                          ? "border-primary bg-primary text-primary-foreground font-bold shadow-xs"
+                                          : "border-border bg-background text-foreground hover:border-muted-foreground"
+                                          }`}
                                       >
                                         {opt}
                                       </button>
@@ -595,13 +664,13 @@ function resolveCategoryAttributes(selectedCategorySlug, categories) {
 
                           if (attr.type === "boolean") {
                             return (
-                              <div key={attr.key} className="flex items-center gap-2 pt-4">
+                              <div key={attr.key} className="flex items-center gap-2 pt-2">
                                 <input
                                   type="checkbox"
                                   id={`attr-${attr.key}`}
                                   checked={Boolean(dynamicAttributes[attr.key])}
                                   onChange={(e) => setDynamicAttributes(prev => ({ ...prev, [attr.key]: e.target.checked }))}
-                                  className="rounded border-border"
+                                  className="rounded border-border size-4 accent-primary"
                                 />
                                 <label htmlFor={`attr-${attr.key}`} className="text-xs font-medium text-foreground cursor-pointer">
                                   {attr.label}
@@ -627,15 +696,18 @@ function resolveCategoryAttributes(selectedCategorySlug, categories) {
 
                       {/* Size Measurements Chart Builder */}
                       {selectedSizes.length > 0 && (
-                        <div className="space-y-4 rounded-lg border border-border p-4 bg-background">
+                        <div className="space-y-4 rounded-xl border border-border p-4 bg-background">
                           <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-2 border-b border-border/50 pb-3">
-                            <label className="block text-sm font-bold text-foreground">Size Measurements (Inches)</label>
+                            <div>
+                              <label className="block text-xs font-bold text-foreground">Size Measurements Chart Builder</label>
+                              <p className="text-[11px] text-muted-foreground">Enter garment measurements per size in inches</p>
+                            </div>
                             <div className="flex items-center gap-2">
-                              <span className="text-xs font-semibold text-muted-foreground">Type:</span>
+                              <span className="text-xs font-semibold text-muted-foreground">Preset:</span>
                               <select
                                 value={measurementPreset}
                                 onChange={(e) => setMeasurementPreset(e.target.value)}
-                                className="rounded-md border border-border bg-background px-2.5 py-1 text-xs outline-none focus:border-ring font-medium"
+                                className="rounded-lg border border-border bg-background px-2.5 py-1 text-xs outline-none focus:border-ring font-medium"
                               >
                                 {Object.entries(MEASUREMENT_PRESETS).map(([key, preset]) => (
                                   <option key={key} value={key}>
@@ -646,70 +718,77 @@ function resolveCategoryAttributes(selectedCategorySlug, categories) {
                             </div>
                           </div>
 
-                          {selectedSizes.map((size) => {
-                            const activeFields = MEASUREMENT_PRESETS[measurementPreset]?.fields || [];
-                            return (
-                              <div key={size} className="flex flex-col gap-2 rounded-lg border border-border/60 bg-muted/20 p-3">
-                                <div className="w-12 font-bold text-xs bg-foreground text-background text-center py-1 rounded">{size}</div>
-                                <div className="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-4 gap-2">
-                                  {activeFields.map((f) => (
-                                    <div key={f.key} className="space-y-1">
-                                      <label className="text-[11px] font-medium text-muted-foreground block">{f.label}</label>
-                                      <Input
-                                        placeholder={f.placeholder}
-                                        value={sizeMeasurements[size]?.[f.key] || ""}
-                                        onChange={(e) =>
-                                          setSizeMeasurements((prev) => ({
-                                            ...prev,
-                                            [size]: { ...prev[size], [f.key]: e.target.value },
-                                          }))
-                                        }
-                                        className="h-8 text-xs"
-                                      />
-                                    </div>
-                                  ))}
+                          <div className="space-y-3">
+                            {selectedSizes.map((size) => {
+                              const activeFields = MEASUREMENT_PRESETS[measurementPreset]?.fields || [];
+                              return (
+                                <div key={size} className="flex flex-col sm:flex-row items-start sm:items-center gap-3 rounded-xl border border-border/60 bg-muted/20 p-3">
+                                  <div className="size-9 shrink-0 font-bold text-xs bg-primary text-primary-foreground rounded-lg flex items-center justify-center shadow-xs">{size}</div>
+                                  <div className="grid grid-cols-2 sm:grid-cols-4 gap-2 flex-1 w-full">
+                                    {activeFields.map((f) => (
+                                      <div key={f.key} className="space-y-1">
+                                        <label className="text-[11px] font-medium text-muted-foreground block truncate">{f.label}</label>
+                                        <Input
+                                          placeholder={f.placeholder}
+                                          value={sizeMeasurements[size]?.[f.key] || ""}
+                                          onChange={(e) =>
+                                            setSizeMeasurements((prev) => ({
+                                              ...prev,
+                                              [size]: { ...prev[size], [f.key]: e.target.value },
+                                            }))
+                                          }
+                                          className="h-8 text-xs bg-background"
+                                        />
+                                      </div>
+                                    ))}
+                                  </div>
                                 </div>
-                              </div>
-                            );
-                          })}
+                              );
+                            })}
+                          </div>
                         </div>
                       )}
                     </div>
                   ) : (
-                    <div className="sm:col-span-2">
-                      <label className="mb-1 block text-sm font-medium text-foreground">Available Sizes (Optional)</label>
-                      <div className="flex flex-wrap gap-2 mb-4">
-                        {AVAILABLE_SIZES.map((size) => (
-                          <button
-                            key={size}
-                            type="button"
-                            onClick={() => {
-                              setSelectedSizes((prev) =>
-                                prev.includes(size)
-                                  ? prev.filter((s) => s !== size)
-                                  : [...prev, size]
-                              );
-                            }}
-                            className={`rounded-lg border px-3 py-1.5 text-xs font-medium transition-colors ${
-                              selectedSizes.includes(size)
-                                ? "border-foreground bg-foreground text-background"
+                    <div className="space-y-4">
+                      <div>
+                        <label className="mb-2 block text-xs font-semibold text-foreground">Available Sizes (Select sizes for this product)</label>
+                        <div className="flex flex-wrap gap-2">
+                          {AVAILABLE_SIZES.map((size) => (
+                            <button
+                              key={size}
+                              type="button"
+                              onClick={() => {
+                                setSelectedSizes((prev) =>
+                                  prev.includes(size)
+                                    ? prev.filter((s) => s !== size)
+                                    : [...prev, size]
+                                );
+                              }}
+                              className={`rounded-lg border px-3 py-1.5 text-xs font-medium transition-colors ${selectedSizes.includes(size)
+                                ? "border-primary bg-primary text-primary-foreground font-bold shadow-xs"
                                 : "border-border bg-background text-foreground hover:border-muted-foreground"
-                            }`}
-                          >
-                            {size}
-                          </button>
-                        ))}
+                                }`}
+                            >
+                              {size}
+                            </button>
+                          ))}
+                        </div>
                       </div>
+
                       {selectedSizes.length > 0 && (
-                        <div className="space-y-4 rounded-lg border border-border p-4 bg-muted/30">
+                        <div className="space-y-4 rounded-xl border border-border p-4 bg-muted/20">
                           <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-2 border-b border-border/50 pb-3">
-                            <label className="block text-sm font-bold text-foreground">Size Measurements (Inches)</label>
+                            <div>
+                              <label className="block text-xs font-bold text-foreground">Size Measurements Chart Builder</label>
+                              <p className="text-[11px] text-muted-foreground">Enter garment measurements per size in inches</p>
+                            </div>
                             <div className="flex items-center gap-2">
-                              <span className="text-xs font-semibold text-muted-foreground">Type:</span>
+                              <span className="text-xs font-semibold text-muted-foreground">Preset:</span>
                               <select
                                 value={measurementPreset}
                                 onChange={(e) => setMeasurementPreset(e.target.value)}
-                                className="rounded-md border border-border bg-background px-2.5 py-1 text-xs outline-none focus:border-ring font-medium"
+                                className="rounded-lg border border-border bg-background px-2.5 py-1 text-xs outline-none focus:border-ring font-medium"
                               >
                                 {Object.entries(MEASUREMENT_PRESETS).map(([key, preset]) => (
                                   <option key={key} value={key}>
@@ -720,45 +799,50 @@ function resolveCategoryAttributes(selectedCategorySlug, categories) {
                             </div>
                           </div>
 
-                          {selectedSizes.map((size) => {
-                            const activeFields = MEASUREMENT_PRESETS[measurementPreset]?.fields || [];
-                            return (
-                              <div key={size} className="flex flex-col gap-2 rounded-lg border border-border/60 bg-background p-3">
-                                <div className="w-12 font-bold text-xs bg-foreground text-background text-center py-1 rounded">{size}</div>
-                                <div className="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-4 gap-2">
-                                  {activeFields.map((f) => (
-                                    <div key={f.key} className="space-y-1">
-                                      <label className="text-[11px] font-medium text-muted-foreground block">{f.label}</label>
-                                      <Input
-                                        placeholder={f.placeholder}
-                                        value={sizeMeasurements[size]?.[f.key] || ""}
-                                        onChange={(e) =>
-                                          setSizeMeasurements((prev) => ({
-                                            ...prev,
-                                            [size]: { ...prev[size], [f.key]: e.target.value },
-                                          }))
-                                        }
-                                        className="h-8 text-xs"
-                                      />
-                                    </div>
-                                  ))}
+                          <div className="space-y-3">
+                            {selectedSizes.map((size) => {
+                              const activeFields = MEASUREMENT_PRESETS[measurementPreset]?.fields || [];
+                              return (
+                                <div key={size} className="flex flex-col sm:flex-row items-start sm:items-center gap-3 rounded-xl border border-border/60 bg-background p-3">
+                                  <div className="size-9 shrink-0 font-bold text-xs bg-primary text-primary-foreground rounded-lg flex items-center justify-center shadow-xs">{size}</div>
+                                  <div className="grid grid-cols-2 sm:grid-cols-4 gap-2 flex-1 w-full">
+                                    {activeFields.map((f) => (
+                                      <div key={f.key} className="space-y-1">
+                                        <label className="text-[11px] font-medium text-muted-foreground block truncate">{f.label}</label>
+                                        <Input
+                                          placeholder={f.placeholder}
+                                          value={sizeMeasurements[size]?.[f.key] || ""}
+                                          onChange={(e) =>
+                                            setSizeMeasurements((prev) => ({
+                                              ...prev,
+                                              [size]: { ...prev[size], [f.key]: e.target.value },
+                                            }))
+                                          }
+                                          className="h-8 text-xs"
+                                        />
+                                      </div>
+                                    ))}
+                                  </div>
                                 </div>
-                              </div>
-                            );
-                          })}
+                              );
+                            })}
+                          </div>
                         </div>
                       )}
                     </div>
                   )}
 
-                  <div className="sm:col-span-2 space-y-3 rounded-lg border border-border p-4 bg-muted/20">
-                    <label className="block text-sm font-medium text-foreground">Color Variants (Color Family with Image)</label>
+                  {/* Color Family Variants */}
+                  <div className="space-y-3 rounded-xl border border-border p-4 bg-muted/10">
+                    <div>
+                      <label className="block text-xs font-bold text-foreground">Color Variants (Color Family with Image)</label>
+                    </div>
                     <div className="flex flex-col sm:flex-row gap-2 items-start sm:items-center">
                       <Input
-                        placeholder="Color name (e.g. Orange, Navy Blue)"
+                        placeholder="Color name (e.g. Navy Blue, Olive Green)"
                         value={colorNameInput}
                         onChange={(e) => setColorNameInput(e.target.value)}
-                        className="flex-1"
+                        className="flex-1 text-xs"
                       />
                       <input
                         type="file"
@@ -777,36 +861,37 @@ function resolveCategoryAttributes(selectedCategorySlug, categories) {
                         type="button"
                         variant="outline"
                         onClick={() => colorInputRef.current?.click()}
-                        className="shrink-0 text-xs"
+                        className="shrink-0 text-xs rounded-lg"
                       >
                         <Camera className="size-3.5 mr-1" />
-                        {colorPreview ? "Change Image" : "Upload Color Image"}
+                        {colorPreview ? "Image Selected" : "Upload Color Image"}
                       </Button>
                       <Button
                         type="button"
                         onClick={handleAddColorVariant}
-                        className="shrink-0 text-xs"
+                        className="shrink-0 text-xs rounded-lg"
                       >
                         Add Variant
                       </Button>
                     </div>
                     {colorPreview && (
                       <div className="flex items-center gap-2 pt-1">
-                        <img src={colorPreview} alt="Color preview" className="size-10 rounded border object-cover" />
-                        <span className="text-xs text-muted-foreground">Image selected for {colorNameInput || "new color"}</span>
+                        <img src={colorPreview} alt="Color preview" className="size-10 rounded-lg border object-cover shadow-xs" />
+                        <span className="text-xs text-muted-foreground">Image preview for {colorNameInput || "new color"}</span>
                       </div>
                     )}
 
                     {colorVariants.length > 0 && (
-                      <div className="mt-3 flex flex-wrap gap-3 pt-2 border-t border-border">
+                      <div className="mt-3 flex flex-wrap gap-2.5 pt-2 border-t border-border/50">
                         {colorVariants.map((c, index) => (
-                          <div key={index} className="flex items-center gap-2 rounded-lg border border-border bg-background p-1.5 pr-3 shadow-sm">
-                            <img src={c.image} alt={c.name} className="size-9 rounded object-cover border" />
+                          <div key={index} className="flex items-center gap-2 rounded-xl border border-border bg-background p-1.5 pr-3 shadow-xs">
+                            <img src={c.image} alt={c.name} className="size-8 rounded-lg object-cover border" />
                             <span className="text-xs font-semibold text-foreground">{c.name}</span>
                             <button
                               type="button"
                               onClick={() => handleRemoveColorVariant(index)}
-                              className="ml-1 text-muted-foreground hover:text-destructive"
+                              className="ml-1 flex size-5 items-center justify-center rounded-full text-destructive hover:bg-destructive/15 transition-colors"
+                              title="Remove color variant"
                             >
                               <X className="size-3.5" />
                             </button>
@@ -816,164 +901,163 @@ function resolveCategoryAttributes(selectedCategorySlug, categories) {
                     )}
                   </div>
 
-                  <div>
-                    <label className="mb-1 block text-sm font-medium text-foreground">Price in BDT *</label>
-                    <Input {...register("price")} type="number" step="0.01" placeholder="৳0" className={errors.price ? "border-destructive" : ""} />
-                    {errors.price && <p className="mt-1 text-xs text-destructive">{errors.price.message}</p>}
-                  </div>
-
-                  <div>
-                    <label className="mb-1 block text-sm font-medium text-foreground">Discount %</label>
-                    <Input {...register("discountPercentage")} type="number" step="0.1" min="0" max="100" placeholder="0" />
-                  </div>
-
-                  <div>
-                    <label className="mb-1 block text-sm font-medium text-foreground">Stock *</label>
-                    <Input {...register("stock")} type="number" min="0" placeholder="0" className={errors.stock ? "border-destructive" : ""} />
-                    {errors.stock && <p className="mt-1 text-xs text-destructive">{errors.stock.message}</p>}
-                  </div>
-
-                  <div className="sm:col-span-2">
-                    <label className="mb-1 block text-sm font-medium text-foreground">Tags (comma separated)</label>
-                    <Input {...register("tags")} placeholder="e.g. wireless, bluetooth, headphones" />
-                  </div>
-
-                  <div className="sm:col-span-2">
-                    <label className="mb-1 block text-sm font-medium text-foreground">Thumbnail</label>
-                    <input
-                      ref={thumbnailInputRef}
-                      type="file"
-                      accept="image/*"
-                      className="hidden"
-                      onChange={(e) => {
-                        const file = e.target.files?.[0];
-                        if (file) {
-                          setThumbnailFile(file);
-                          setThumbnailPreview(URL.createObjectURL(file));
-                        }
-                      }}
-                    />
-                    <div
-                      onClick={() => thumbnailInputRef.current?.click()}
-                      onDragOver={(e) => { e.preventDefault(); setThumbnailDrag(true); }}
-                      onDragLeave={() => setThumbnailDrag(false)}
-                      onDrop={(e) => {
-                        e.preventDefault();
-                        setThumbnailDrag(false);
-                        const file = e.dataTransfer.files?.[0];
-                        if (file && file.type.startsWith("image/")) {
-                          setThumbnailFile(file);
-                          setThumbnailPreview(URL.createObjectURL(file));
-                        }
-                      }}
-                      className={`cursor-pointer rounded-xl border-2 border-dashed p-5 transition-all duration-200 hover:border-primary/50 hover:bg-primary/5 ${thumbnailDrag ? "border-primary bg-primary/10 scale-[1.01]" : "border-border"}`}
-                    >
-                      {thumbnailPreview ? (
-                        <div className="flex flex-wrap items-center gap-3">
-                          <div className="relative">
-                            <img src={thumbnailPreview} alt="Thumbnail" className="size-20 rounded-xl object-cover ring-2 ring-border" />
-                            <div className="absolute -right-1.5 -top-1.5 flex size-5 items-center justify-center rounded-full bg-primary text-primary-foreground">
-                              <Camera className="size-3" />
-                            </div>
-                          </div>
-                          <div className="text-sm font-medium text-foreground">Change thumbnail</div>
-                        </div>
-                      ) : (
-                        <div className="flex flex-col items-center gap-3 py-4">
-                          <div className={`flex size-16 items-center justify-center rounded-xl transition-colors ${thumbnailDrag ? "bg-primary/20 text-primary" : "bg-muted text-muted-foreground"}`}>
-                            <Camera className="size-7" />
-                          </div>
-                          <div className="text-center">
-                            <p className="text-sm font-medium text-foreground">Click to upload thumbnail</p>
-                            <p className="mt-0.5 text-xs text-muted-foreground">Any image format up to 5MB</p>
-                            <p className="mt-1.5 text-xs text-primary">or drag & drop</p>
-                          </div>
-                        </div>
-                      )}
+                  {/* Policy and Logistics */}
+                  <div className="grid gap-4 sm:grid-cols-3 pt-2">
+                    <div>
+                      <label className="mb-1.5 block text-xs font-semibold text-foreground">Warranty Info</label>
+                      <Input {...register("warrantyInformation")} placeholder="e.g. 1 Year Warranty" />
                     </div>
-                  </div>
 
-                  <div className="sm:col-span-2">
-                    <label className="mb-1 block text-sm font-medium text-foreground">Images</label>
-                    <input
-                      ref={imagesInputRef}
-                      type="file"
-                      accept="image/*"
-                      multiple
-                      className="hidden"
-                      onChange={(e) => {
-                        const files = Array.from(e.target.files ?? []);
-                        setImageFiles((prev) => [...prev, ...files]);
-                        setImagePreviews((prev) => [...prev, ...files.map((f) => URL.createObjectURL(f))]);
-                        e.target.value = "";
-                      }}
-                    />
-                    <div
-                      onClick={() => imagesInputRef.current?.click()}
-                      onDragOver={(e) => { e.preventDefault(); setImagesDrag(true); }}
-                      onDragLeave={() => setImagesDrag(false)}
-                      onDrop={(e) => {
-                        e.preventDefault();
-                        setImagesDrag(false);
-                        const files = Array.from(e.dataTransfer.files ?? []).filter((f) => f.type.startsWith("image/"));
-                        if (files.length > 0) {
-                          setImageFiles((prev) => [...prev, ...files]);
-                          setImagePreviews((prev) => [...prev, ...files.map((f) => URL.createObjectURL(f))]);
-                        }
-                      }}
-                      className={`cursor-pointer rounded-xl border-2 border-dashed p-5 transition-all duration-200 hover:border-primary/50 hover:bg-primary/5 ${imagesDrag ? "border-primary bg-primary/10 scale-[1.01]" : "border-border"}`}
-                    >
-                      {imagePreviews.length > 0 ? (
-                        <div className="flex flex-wrap gap-3">
-                          {imagePreviews.map((src, i) => (
-                            <div key={i} className="relative">
-                              <img src={src} alt="" className="size-20 rounded-xl object-cover ring-2 ring-border" />
-                              <div className="absolute -right-1.5 -top-1.5 flex size-5 items-center justify-center rounded-full bg-primary text-primary-foreground">
-                                <span className="text-[10px] font-bold">{i + 1}</span>
-                              </div>
-                            </div>
-                          ))}
-                          <div className="flex size-20 items-center justify-center rounded-xl border-2 border-dashed border-primary/30 bg-primary/5 text-primary transition-colors hover:bg-primary/10">
-                            <Plus className="size-6" />
-                          </div>
-                        </div>
-                      ) : (
-                        <div className="flex flex-col items-center gap-3 py-4">
-                          <div className={`flex size-16 items-center justify-center rounded-xl transition-colors ${imagesDrag ? "bg-primary/20 text-primary" : "bg-muted text-muted-foreground"}`}>
-                            <ImagePlus className="size-7" />
-                          </div>
-                          <div className="text-center">
-                            <p className="text-sm font-medium text-foreground">Click to upload images</p>
-                            <p className="mt-0.5 text-xs text-muted-foreground">Any image format — multiple files supported</p>
-                            <p className="mt-1.5 text-xs text-primary">or drag & drop</p>
-                          </div>
-                        </div>
-                      )}
+                    <div>
+                      <label className="mb-1.5 block text-xs font-semibold text-foreground">Shipping Info</label>
+                      <Input {...register("shippingInformation")} placeholder="e.g. Delivery within 2-3 days" />
                     </div>
-                  </div>
 
-                  <div>
-                    <label className="mb-1 block text-sm font-medium text-foreground">Warranty</label>
-                    <Input {...register("warrantyInformation")} placeholder="e.g. 1 year warranty" />
-                  </div>
-
-                  <div>
-                    <label className="mb-1 block text-sm font-medium text-foreground">Shipping</label>
-                    <Input {...register("shippingInformation")} placeholder="e.g. Free shipping" />
-                  </div>
-
-                  <div className="sm:col-span-2">
-                    <label className="mb-1 block text-sm font-medium text-foreground">Return Policy</label>
-                    <Input {...register("returnPolicy")} placeholder="e.g. 30 day returns" />
+                    <div>
+                      <label className="mb-1.5 block text-xs font-semibold text-foreground">Return Policy</label>
+                      <Input {...register("returnPolicy")} placeholder="e.g. 7 Days Return Policy" />
+                    </div>
                   </div>
                 </div>
 
-                <div className="flex gap-3 pt-2">
-                  <Button type="submit" disabled={createMutation.isPending} className="rounded-lg">
-                    {createMutation.isPending ? "Creating..." : "Create Product"}
-                  </Button>
-                  <Button type="button" variant="ghost" onClick={() => { setShowForm(false); resetForm(); }}>
+                {/* CARD 4: Media & Uploads */}
+                <div className="rounded-2xl border border-border bg-card p-5 shadow-xs space-y-4">
+                  <div className="flex items-center gap-2 border-b border-border/60 pb-3 text-sm font-bold text-foreground">
+                    <ImagePlus className="size-4 text-primary" />
+                    <span>Product Media</span>
+                  </div>
+
+                  <div className="grid gap-6 sm:grid-cols-2">
+                    {/* Thumbnail Image */}
+                    <div>
+                      <label className="mb-2 block text-xs font-semibold text-foreground">Main Thumbnail Image *</label>
+                      <input
+                        ref={thumbnailInputRef}
+                        type="file"
+                        accept="image/*"
+                        className="hidden"
+                        onChange={(e) => {
+                          const file = e.target.files?.[0];
+                          if (file) {
+                            setThumbnailFile(file);
+                            setThumbnailPreview(URL.createObjectURL(file));
+                          }
+                        }}
+                      />
+                      <div
+                        onClick={() => thumbnailInputRef.current?.click()}
+                        onDragOver={(e) => { e.preventDefault(); setThumbnailDrag(true); }}
+                        onDragLeave={() => setThumbnailDrag(false)}
+                        onDrop={(e) => {
+                          e.preventDefault();
+                          setThumbnailDrag(false);
+                          const file = e.dataTransfer.files?.[0];
+                          if (file && file.type.startsWith("image/")) {
+                            setThumbnailFile(file);
+                            setThumbnailPreview(URL.createObjectURL(file));
+                          }
+                        }}
+                        className={`flex min-h-[140px] cursor-pointer items-center justify-center gap-4 rounded-xl border-2 border-dashed p-4 transition-all duration-200 hover:border-primary/50 hover:bg-primary/5 ${thumbnailDrag ? "border-primary bg-primary/10 scale-[1.01]" : "border-border bg-muted/10"}`}
+                      >
+                        {thumbnailPreview ? (
+                          <div className="flex items-center gap-3">
+                            <img src={thumbnailPreview} alt="Thumbnail" className="size-24 rounded-xl object-cover ring-2 ring-primary/20 shadow-xs" />
+                            <div className="text-xs">
+                              <span className="font-semibold text-primary block">Thumbnail Uploaded</span>
+                              <span className="text-muted-foreground block text-[11px] mt-0.5">Click to replace</span>
+                            </div>
+                          </div>
+                        ) : (
+                          <div className="flex flex-col items-center gap-2 text-center p-2">
+                            <div className="flex size-10 items-center justify-center rounded-full bg-primary/10 text-primary">
+                              <Camera className="size-5" />
+                            </div>
+                            <div>
+                              <p className="text-xs font-semibold text-foreground">Upload Cover Image</p>
+                              <p className="text-[11px] text-muted-foreground mt-0.5">PNG, JPG up to 5MB</p>
+                            </div>
+                          </div>
+                        )}
+                      </div>
+                    </div>
+
+                    {/* Gallery Images */}
+                    <div>
+                      <label className="mb-2 block text-xs font-semibold text-foreground">Gallery Images (Multiple)</label>
+                      <input
+                        ref={imagesInputRef}
+                        type="file"
+                        accept="image/*"
+                        multiple
+                        className="hidden"
+                        onChange={(e) => {
+                          const files = Array.from(e.target.files ?? []);
+                          setImageFiles((prev) => [...prev, ...files]);
+                          setImagePreviews((prev) => [...prev, ...files.map((f) => URL.createObjectURL(f))]);
+                          e.target.value = "";
+                        }}
+                      />
+                      <div
+                        onClick={() => imagesInputRef.current?.click()}
+                        onDragOver={(e) => { e.preventDefault(); setImagesDrag(true); }}
+                        onDragLeave={() => setImagesDrag(false)}
+                        onDrop={(e) => {
+                          e.preventDefault();
+                          setImagesDrag(false);
+                          const files = Array.from(e.dataTransfer.files ?? []).filter((f) => f.type.startsWith("image/"));
+                          if (files.length > 0) {
+                            setImageFiles((prev) => [...prev, ...files]);
+                            setImagePreviews((prev) => [...prev, ...files.map((f) => URL.createObjectURL(f))]);
+                          }
+                        }}
+                        className={`flex min-h-[140px] cursor-pointer items-center justify-center rounded-xl border-2 border-dashed p-4 transition-all duration-200 hover:border-primary/50 hover:bg-primary/5 ${imagesDrag ? "border-primary bg-primary/10 scale-[1.01]" : "border-border bg-muted/10"}`}
+                      >
+                        {imagePreviews.length > 0 ? (
+                          <div className="flex flex-wrap gap-2.5">
+                            {imagePreviews.map((src, i) => (
+                              <div key={i} className="relative group">
+                                <img src={src} alt="" className="size-16 rounded-xl object-cover ring-2 ring-primary/40 shadow-xs" />
+                                <button
+                                  type="button"
+                                  onClick={(e) => {
+                                    e.stopPropagation();
+                                    handleRemoveNewImage(i);
+                                  }}
+                                  className="absolute -right-1.5 -top-1.5 flex size-5 items-center justify-center rounded-full bg-destructive text-destructive-foreground shadow-xs hover:scale-110 transition-transform"
+                                  title="Remove image"
+                                >
+                                  <X className="size-3" />
+                                </button>
+                              </div>
+                            ))}
+                            <div className="flex size-16 items-center justify-center rounded-xl border-2 border-dashed border-primary/30 bg-primary/5 text-primary">
+                              <Plus className="size-5" />
+                            </div>
+                          </div>
+                        ) : (
+                          <div className="flex flex-col items-center gap-2 text-center p-2">
+                            <div className="flex size-10 items-center justify-center rounded-full bg-primary/10 text-primary">
+                              <ImagePlus className="size-5" />
+                            </div>
+                            <div>
+                              <p className="text-xs font-semibold text-foreground">Upload Product Gallery</p>
+                              <p className="text-[11px] text-muted-foreground mt-0.5">Select multiple images or drag & drop</p>
+                            </div>
+                          </div>
+                        )}
+                      </div>
+                    </div>
+                  </div>
+                </div>
+
+                {/* Sticky Action Footer */}
+                <div className="sticky bottom-0 z-10 flex items-center justify-end gap-3 border-t border-border bg-background/95 p-4 backdrop-blur-md">
+                  <Button type="button" variant="outline" onClick={() => { setShowForm(false); resetForm(); }} className="rounded-xl">
                     Cancel
+                  </Button>
+                  <Button type="submit" disabled={createMutation.isPending} className="rounded-xl px-6 font-bold shadow-md">
+                    <Plus className="size-4 mr-1.5" />
+                    {createMutation.isPending ? "Creating Product..." : "Create Product"}
                   </Button>
                 </div>
               </form>
@@ -998,15 +1082,15 @@ function resolveCategoryAttributes(selectedCategorySlug, categories) {
           </div>
         ) : (
           <div className="overflow-x-auto">
-            <table className="w-full text-left text-sm">
+            <table className="w-full text-left text-sm table-fixed min-w-[750px]">
               <thead>
                 <tr className="border-b border-border text-muted-foreground">
-                  <th className="px-5 py-3 font-medium">Product</th>
-                  <th className="px-5 py-3 font-medium">Category</th>
-                  <th className="px-5 py-3 font-medium">Price</th>
-                  <th className="px-5 py-3 font-medium">Stock</th>
-                  <th className="px-5 py-3 font-medium">Discount</th>
-                  <th className="px-5 py-3 font-medium">Actions</th>
+                  <th className="px-5 py-3 font-medium w-[30%]">Product</th>
+                  <th className="px-5 py-3 font-medium w-[18%]">Category</th>
+                  <th className="px-5 py-3 font-medium w-[15%]">Price</th>
+                  <th className="px-5 py-3 font-medium w-[12%]">Stock</th>
+                  <th className="px-5 py-3 font-medium w-[10%]">Discount</th>
+                  <th className="px-5 py-3 font-medium text-right w-[15%] min-w-[150px]">Actions</th>
                 </tr>
               </thead>
               <tbody className="divide-y divide-border">
@@ -1041,8 +1125,8 @@ function resolveCategoryAttributes(selectedCategorySlug, categories) {
                         <span className="text-muted-foreground">—</span>
                       )}
                     </td>
-                    <td className="px-5 py-3">
-                      <div className="flex items-center gap-1">
+                    <td className="px-5 py-3 text-right">
+                      <div className="flex items-center justify-end gap-1">
                         <Button asChild variant="ghost" size="sm">
                           <Link href={`/dashboard/products/${product._id}`}>
                             <Eye className="size-4" />
@@ -1072,7 +1156,7 @@ function resolveCategoryAttributes(selectedCategorySlug, categories) {
                           <Button
                             variant="ghost"
                             size="sm"
-                            className="text-muted-foreground hover:bg-destructive/10 hover:text-destructive"
+                            className="text-destructive hover:bg-destructive/10 hover:text-destructive font-medium"
                             onClick={() => setDeletingId(product._id)}
                           >
                             <Trash2 className="size-4" />

@@ -304,7 +304,7 @@ export default function Cart({ children }) {
                         {item.price ? formatBDT(item.price * item.quantity) : "N/A"}
                       </span>
                       <button
-                        className="flex size-7 shrink-0 items-center justify-center rounded-lg text-muted-foreground transition-colors hover:bg-destructive/10 hover:text-destructive"
+                        className="flex size-7 shrink-0 items-center justify-center rounded-lg text-destructive transition-colors hover:bg-destructive/10 hover:text-destructive"
                         disabled={removeMutation.isPending}
                         onClick={() => removeMutation.mutate({ id: item.productId, size: item.size || "", color: item.color || "" })}
                       >

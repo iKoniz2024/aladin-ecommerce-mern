@@ -273,7 +273,7 @@ const Navbar = () => {
                             </Link>
                             <button
                                 onClick={() => setMobileOpen(false)}
-                                className="flex size-8 items-center justify-center rounded-lg text-muted-foreground transition-colors hover:bg-muted"
+                                className="flex size-8 items-center justify-center rounded-lg text-destructive transition-colors hover:bg-destructive/10 hover:text-destructive"
                             >
                                 <X className="size-5" />
                             </button>

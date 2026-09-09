@@ -15,7 +15,7 @@ function NewArrivalsSkeleton() {
     <div className="flex gap-3 overflow-hidden">
       {Array.from({ length: 6 }).map((_, i) => (
         <div key={i} className="shrink-0 w-40 sm:w-45">
-          <Skeleton className="aspect-3/4 w-full rounded-lg" />
+          <Skeleton className="aspect-square w-full rounded-lg" />
           <div className="mt-2 space-y-2">
             <Skeleton className="h-4 w-3/4" />
             <Skeleton className="h-3 w-1/2" />

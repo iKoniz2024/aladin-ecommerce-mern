@@ -193,7 +193,7 @@ export default function Products({ initialCategories, initialProducts }) {
                 <span className="text-sm font-semibold text-foreground">Filters</span>
                 <button
                   onClick={() => setShowFilters(false)}
-                  className="flex size-7 items-center justify-center rounded-lg text-muted-foreground hover:bg-muted"
+                  className="flex size-7 items-center justify-center rounded-lg text-destructive hover:bg-destructive/10 transition-colors"
                 >
                   <X className="size-4" />
                 </button>
@@ -316,9 +316,9 @@ export default function Products({ initialCategories, initialProducts }) {
 
               {hasFilters && (
                 <Button
-                  variant="ghost"
+                  variant="outline"
                   size="sm"
-                  className="w-full"
+                  className="w-full text-destructive border-destructive/30 hover:bg-destructive/10 hover:text-destructive"
                   onClick={() => {
                     clearFilters();
                     setShowFilters(false);
@@ -340,7 +340,7 @@ export default function Products({ initialCategories, initialProducts }) {
                       {activeCategoryLabel}
                       <button
                         onClick={() => handleCategoryChange(selectedCategory)}
-                        className="ml-0.5 rounded-full p-0.5 hover:bg-foreground/10"
+                        className="ml-0.5 rounded-full p-0.5 text-destructive hover:bg-destructive/15 transition-colors"
                       >
                         <X className="size-3" />
                       </button>
@@ -351,7 +351,7 @@ export default function Products({ initialCategories, initialProducts }) {
                       Search: &ldquo;{searchQuery}&rdquo;
                       <button
                         onClick={() => applySearch("")}
-                        className="ml-0.5 rounded-full p-0.5 hover:bg-foreground/10"
+                        className="ml-0.5 rounded-full p-0.5 text-destructive hover:bg-destructive/15 transition-colors"
                       >
                         <X className="size-3" />
                       </button>
@@ -387,7 +387,7 @@ export default function Products({ initialCategories, initialProducts }) {
 
             <div className="pt-4">
               {showSkeleton ? (
-                <div className="grid grid-cols-1 gap-5 sm:grid-cols-2 lg:grid-cols-3">
+                <div className="grid grid-cols-2 gap-3.5 sm:grid-cols-3 md:grid-cols-3 lg:grid-cols-4 xl:grid-cols-4">
                   {Array.from({ length: 12 }).map((_, i) => (
                     <ProductSkeleton key={i} />
                   ))}
@@ -407,7 +407,7 @@ export default function Products({ initialCategories, initialProducts }) {
                   )}
                 </div>
               ) : (
-                <div className="grid grid-cols-1 gap-5 sm:grid-cols-2 lg:grid-cols-3">
+                <div className="grid grid-cols-2 gap-3.5 sm:grid-cols-3 md:grid-cols-3 lg:grid-cols-4 xl:grid-cols-4">
                   {filteredProducts.map((product, i) => (
                     <ProductCard key={product._id} product={product} index={i} />
                   ))}

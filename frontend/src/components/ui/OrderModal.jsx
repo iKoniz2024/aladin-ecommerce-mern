@@ -59,7 +59,7 @@ export default function OrderModal({ product, open, onClose }) {
           <h3 className="text-lg font-semibold text-foreground">Choose Options</h3>
           <button
             onClick={onClose}
-            className="flex size-8 items-center justify-center rounded-lg text-muted-foreground transition-colors hover:bg-muted hover:text-foreground"
+            className="flex size-8 items-center justify-center rounded-lg text-destructive transition-colors hover:bg-destructive/10 hover:text-destructive"
           >
             <X className="size-5" />
           </button>

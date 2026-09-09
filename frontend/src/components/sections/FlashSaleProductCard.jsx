@@ -75,7 +75,7 @@ export default function FlashSaleProductCard({ product, index, maxStock }) {
               />
 
               {hasDiscount && (
-                <div className="absolute left-0 top-3 z-10 rounded-r-md bg-gradient-to-r from-orange-500 via-pink-500 to-rose-500 px-1.5 py-1 text-[11px] sm:text-xs font-black text-white tracking-tight shadow-md animate-pulse">
+                <div className="absolute left-0 top-3 z-10 rounded-none bg-gradient-to-r from-orange-500 via-pink-500 to-rose-500 px-1.5 py-1 text-[11px] sm:text-xs font-black text-white tracking-tight shadow-md animate-pulse">
                   -{Math.round(product.discountPercentage)}%
                 </div>
               )}
@@ -97,47 +97,37 @@ export default function FlashSaleProductCard({ product, index, maxStock }) {
               )}
             </div>
 
-            <div className="flex flex-1 flex-col gap-2 p-4">
-              {product.brand && (
-                <p className="text-xs font-medium uppercase tracking-wider text-muted-foreground">
-                  {product.brand}
-                </p>
-              )}
+            <div className="flex flex-1 flex-col justify-between gap-2.5 p-3">
+              <div className="flex items-center justify-between gap-2">
+                <h3 className="truncate text-xs font-semibold text-foreground sm:text-sm">
+                  {product.title}
+                </h3>
 
-              <h3 className="line-clamp-2 text-sm font-semibold text-foreground sm:text-base">
-                {product.title}
-              </h3>
-
-              <div className="flex items-baseline gap-2">
-                <span className="text-lg font-bold text-foreground">
-                  {formatBDT(hasDiscount ? discountedPrice : product.price)}
-                </span>
-                {hasDiscount && (
-                  <span className="text-sm text-muted-foreground line-through">
-                    {formatBDT(product.price)}
+                <div className="flex items-baseline gap-1 shrink-0">
+                  <span className="text-xs font-bold text-foreground sm:text-sm">
+                    {formatBDT(hasDiscount ? discountedPrice : product.price)}
                   </span>
-                )}
+                  {hasDiscount && (
+                    <span className="text-[10px] text-muted-foreground line-through">
+                      {formatBDT(product.price)}
+                    </span>
+                  )}
+                </div>
               </div>
 
-              {product.stock > 0 && (
-                <StockBar stock={product.stock} maxStock={maxStock} />
-              )}
-            </div>
-
-            {!isAdmin && (
-              <div className="p-4 pt-0 mt-auto">
+              {!isAdmin && (
                 <button
                   disabled={product.stock === 0}
                   onClick={(e) => {
                     e.preventDefault();
                     setShowModal(true);
                   }}
-                  className="w-full rounded-lg bg-[#FFA800] text-[#0B3C73] py-2.5 text-sm font-bold transition-all duration-200 hover:bg-[#e69500] hover:shadow-md active:scale-[0.99] disabled:opacity-50"
+                  className="w-full rounded-lg bg-[#FFA800] text-[#0B3C73] py-1.5 text-xs sm:text-sm font-bold transition-all duration-200 hover:bg-[#e69500] hover:shadow-xs active:scale-[0.99] disabled:opacity-50"
                 >
-                  {product.stock === 0 ? "Unavailable" : "অর্ডার করুন"}
+                  {product.stock === 0 ? "Unavailable" : "Order Now"}
                 </button>
-              </div>
-            )}
+              )}
+            </div>
           </div>
         </Link>
       </motion.div>

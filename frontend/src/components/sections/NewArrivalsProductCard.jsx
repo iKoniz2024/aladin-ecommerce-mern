@@ -37,7 +37,7 @@ export default function NewArrivalsProductCard({ product, index }) {
       >
         <div className="overflow-hidden rounded-lg border border-border bg-card">
           <Link href={`/product/${product._id}`} className="block">
-            <div className="relative aspect-3/4 overflow-hidden bg-muted">
+            <div className="relative aspect-square overflow-hidden bg-muted">
               <img
                 src={product.thumbnail || product.images?.[0] || null}
                 alt={product.title}
@@ -45,7 +45,7 @@ export default function NewArrivalsProductCard({ product, index }) {
                 loading="lazy"
               />
               {hasDiscount && (
-                <div className="absolute left-0 top-3 z-10 rounded-r-md bg-gradient-to-r from-orange-500 via-pink-500 to-rose-500 px-1.5 py-1 text-[11px] sm:text-xs font-black text-white tracking-tight shadow-md">
+                <div className="absolute left-0 top-3 z-10 rounded-none bg-gradient-to-r from-orange-500 via-pink-500 to-rose-500 px-1.5 py-1 text-[11px] sm:text-xs font-black text-white tracking-tight shadow-md">
                   -{Math.round(product.discountPercentage)}%
                 </div>
               )}
@@ -79,7 +79,7 @@ export default function NewArrivalsProductCard({ product, index }) {
                 onClick={() => setShowModal(true)}
                 className="w-full rounded bg-foreground py-1.5 text-[11px] font-medium text-background transition-colors hover:bg-foreground/90 disabled:opacity-50"
               >
-                {isOutOfStock ? "Unavailable" : "অর্ডার করুন"}
+                {isOutOfStock ? "Unavailable" : "Order Now"}
               </button>
             </div>
           )}

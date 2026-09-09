@@ -186,17 +186,17 @@ export default function AdminOrders({ children }) {
         </div>
       ) : (
         <div className="overflow-x-auto rounded-xl border border-border">
-          <table className="w-full text-left text-sm">
+          <table className="w-full text-left text-sm table-fixed min-w-[850px]">
             <thead className="border-b border-border bg-muted/50">
               <tr>
-                <th className="px-4 py-3 font-medium text-muted-foreground">Order ID</th>
-                <th className="px-4 py-3 font-medium text-muted-foreground">Customer</th>
-                <th className="px-4 py-3 font-medium text-muted-foreground">Items</th>
-                <th className="px-4 py-3 font-medium text-muted-foreground">Total</th>
-                <th className="px-4 py-3 font-medium text-muted-foreground">Payment</th>
-                <th className="px-4 py-3 font-medium text-muted-foreground">Date</th>
-                <th className="px-4 py-3 font-medium text-muted-foreground">Status</th>
-                <th className="px-4 py-3 font-medium text-muted-foreground">Actions</th>
+                <th className="px-4 py-3 font-medium text-muted-foreground w-[12%]">Order ID</th>
+                <th className="px-4 py-3 font-medium text-muted-foreground w-[22%]">Customer</th>
+                <th className="px-4 py-3 font-medium text-muted-foreground w-[8%]">Items</th>
+                <th className="px-4 py-3 font-medium text-muted-foreground w-[12%]">Total</th>
+                <th className="px-4 py-3 font-medium text-muted-foreground w-[12%]">Payment</th>
+                <th className="px-4 py-3 font-medium text-muted-foreground w-[12%]">Date</th>
+                <th className="px-4 py-3 font-medium text-muted-foreground w-[12%]">Status</th>
+                <th className="px-4 py-3 font-medium text-muted-foreground text-right w-[10%] min-w-[150px]">Actions</th>
               </tr>
             </thead>
             <tbody className="divide-y divide-border">
@@ -257,8 +257,8 @@ export default function AdminOrders({ children }) {
                       <ChevronDown className="pointer-events-none absolute right-1.5 top-1/2 size-3 -translate-y-1/2 text-current" />
                     </div>
                   </td>
-                  <td className="px-4 py-3">
-                    <div className="flex items-center gap-1">
+                  <td className="px-4 py-3 text-right">
+                    <div className="flex items-center justify-end gap-1">
                       <Button asChild variant="ghost" size="sm">
                         <Link href={`/dashboard/orders/${order._id}`}>
                           <Eye className="size-4" />
@@ -288,7 +288,7 @@ export default function AdminOrders({ children }) {
                         <Button
                           variant="ghost"
                           size="sm"
-                          className="text-muted-foreground hover:bg-destructive/10 hover:text-destructive"
+                          className="text-destructive hover:bg-destructive/10 hover:text-destructive"
                           onClick={() => setDeletingId(order._id)}
                         >
                           <Trash2 className="size-4" />

@@ -189,10 +189,10 @@ export default function ProductDetails({ children }) {
               <img
                 src={mainDisplayImage}
                 alt={product.title}
-                className="aspect-4/5 w-full object-cover"
+                className="aspect-square w-full object-cover"
               />
               {hasDiscount && (
-                <div className="absolute left-0 top-4 z-10 rounded-r-md bg-gradient-to-r from-orange-500 via-pink-500 to-rose-500 px-2 py-1 text-xs sm:text-sm font-black text-white tracking-tight shadow-md">
+                <div className="absolute left-0 top-4 z-10 rounded-none bg-gradient-to-r from-orange-500 via-pink-500 to-rose-500 px-2 py-1 text-xs sm:text-sm font-black text-white tracking-tight shadow-md">
                   -{Math.round(product.discountPercentage)}%
                 </div>
               )}
@@ -350,7 +350,7 @@ export default function ProductDetails({ children }) {
                     disabled={product.stock === 0}
                     onClick={handleAddToCart}
                   >
-                    অর্ডার করুন
+                    Order Now
                   </Button>
                 )}
               </div>
@@ -402,19 +402,19 @@ export default function ProductDetails({ children }) {
               <ul className="space-y-3">
                 <li className="flex items-start gap-2">
                   <svg className="mt-0.5 size-3 shrink-0 text-foreground" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth="3" d="M5 13l4 4L19 7" /></svg>
-                  <span>পণ্য হাতে পেয়ে মূল্য পরিশোধ করুন</span>
+                  <span>Cash on delivery available</span>
                 </li>
                 <li className="flex items-start gap-2">
                   <svg className="mt-0.5 size-3 shrink-0 text-foreground" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth="3" d="M5 13l4 4L19 7" /></svg>
-                  <span>৭ দিনের রিটার্ন পলিসি</span>
+                  <span>7 days return policy</span>
                 </li>
                 <li className="flex items-start gap-2">
                   <svg className="mt-0.5 size-3 shrink-0 text-foreground" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth="3" d="M5 13l4 4L19 7" /></svg>
-                  <span>দ্রুত সময়ের মধ্যে সারা বাংলাদেশে "হোম ডেলিভারি"</span>
+                  <span>Fast home delivery across Bangladesh</span>
                 </li>
                 <li className="flex items-start gap-2">
                   <svg className="mt-0.5 size-3 shrink-0 text-foreground" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth="3" d="M5 13l4 4L19 7" /></svg>
-                  <span>24/7 কাস্টমার সাপোর্ট: <a href="/orders" className="text-foreground hover:underline">Order Tracking</a></span>
+                  <span>24/7 Customer Support: <a href="/orders" className="text-foreground hover:underline">Order Tracking</a></span>
                 </li>
               </ul>
             </div>
@@ -452,15 +452,15 @@ export default function ProductDetails({ children }) {
               const columnKeys = Array.from(columnKeysSet);
 
               const FIELD_LABELS = {
-                chest: "Chest (বুক)",
-                long: "Length (দৈর্ঘ্য)",
-                body: "Body (বুক)",
-                shoulder: "Shoulder (কাধ)",
-                sleeve: "Sleeve (হাতা)",
-                waist: "Waist (কোমর)",
-                hip: "Hip (হিপ)",
-                thigh: "Thigh (রান)",
-                ageGroup: "Age (বয়স)",
+                chest: "Chest",
+                long: "Length",
+                body: "Body",
+                shoulder: "Shoulder",
+                sleeve: "Sleeve",
+                waist: "Waist",
+                hip: "Hip",
+                thigh: "Thigh",
+                ageGroup: "Age",
                 footLength: "Foot Length",
                 euSize: "EU/UK Size",
               };

@@ -358,7 +358,7 @@ export default function AdminSettings({ children }) {
                         const updated = displayMetaPixels.filter((_, i) => i !== index);
                         setMetaPixels(updated);
                       }}
-                      className="flex size-9 items-center justify-center rounded-lg border border-border text-muted-foreground hover:bg-destructive/10 hover:text-destructive"
+                      className="flex size-9 items-center justify-center rounded-lg border border-destructive/20 text-destructive hover:bg-destructive/10 hover:text-destructive transition-colors"
                     >
                       <Trash2 className="size-4" />
                     </button>
