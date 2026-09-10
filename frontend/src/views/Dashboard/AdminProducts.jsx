@@ -20,6 +20,7 @@ import { Badge } from "@/components/ui/badge";
 import { Skeleton } from "@/components/ui/skeleton";
 import { Helmet } from "react-helmet-async";
 import useSettings from "@/hooks/useSettings";
+import { useAuth } from "@/hooks/useAuth";
 
 const AVAILABLE_SIZES = ["XS", "S", "M", "L", "XL", "XXL", "3XL", "4XL"];
 
@@ -105,8 +106,12 @@ import usePageTitle from "@/hooks/usePageTitle";
 
 export default function AdminProducts({ children }) {
   const { siteName } = useSettings();
-  usePageTitle("Admin Products");
+  const { user } = useAuth();
+  usePageTitle(user?.role === "vendor" ? "My Shop Products" : "Admin Products");
   const queryClient = useQueryClient();
+
+  const isVendor = user?.role === "vendor";
+  const vendorUserId = user?._id || user?.id;
   const [showForm, setShowForm] = useState(false);
   const [deletingId, setDeletingId] = useState(null);
   const [thumbnailFile, setThumbnailFile] = useState(null);
@@ -150,6 +155,12 @@ export default function AdminProducts({ children }) {
   const products = useMemo(() => data?.products ?? [], [data]);
 
   const filteredProducts = useMemo(() => products.filter((product) => {
+    // Strict separation: Vendors ONLY see products explicitly owned by them
+    if (isVendor) {
+      if (!product.vendorId || String(product.vendorId) !== String(vendorUserId)) {
+        return false;
+      }
+    }
     const matchesSearch =
       product.title.toLowerCase().includes(search.toLowerCase()) ||
       product.brand?.toLowerCase().includes(search.toLowerCase()) ||
@@ -165,7 +176,7 @@ export default function AdminProducts({ children }) {
       (discountFilter === "with-discount" && product.discountPercentage > 0) ||
       (discountFilter === "no-discount" && product.discountPercentage === 0);
     return matchesSearch && matchesCategory && matchesStock && matchesDiscount;
-  }), [products, search, categoryFilter, stockFilter, discountFilter]);
+  }), [products, search, categoryFilter, stockFilter, discountFilter, isVendor, vendorUserId]);
 
   const totalPages = Math.ceil(filteredProducts.length / limit);
   const paginatedProducts = filteredProducts.slice((page - 1) * limit, page * limit);

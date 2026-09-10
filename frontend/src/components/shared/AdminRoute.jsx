@@ -9,20 +9,26 @@ export default function AdminRoute({ children }) {
   const router = useRouter();
 
   useEffect(() => {
-    if (!loading && user?.role !== "admin") {
-      router.push("/login");
+    if (!loading) {
+      if (!user) {
+        router.push("/login");
+      } else if (user.role !== "admin" && user.role !== "vendor") {
+        router.push("/login");
+      } else if (user.role === "vendor" && user.vendorInfo?.status !== "approved") {
+        router.push("/login");
+      }
     }
   }, [user, loading, router]);
 
   if (loading) {
     return (
       <div className="flex min-h-screen items-center justify-center">
-        <p className="text-sm text-muted-foreground">Loading...</p>
+        <p className="text-sm text-muted-foreground">Loading dashboard...</p>
       </div>
     );
   }
 
-  if (user?.role === "admin") {
+  if (user?.role === "admin" || (user?.role === "vendor" && user?.vendorInfo?.status === "approved")) {
     return children;
   }
 

@@ -14,15 +14,26 @@ const seedAdmin = async () => {
             email: process.env.ADMIN_EMAIL
         });
 
-        if (existingAdmin) {
-            console.log("Admin already exists.");
-            process.exit();
-        }
-
         const hashedPassword = await bcrypt.hash(
             process.env.ADMIN_PASSWORD,
             10
         );
+
+        if (existingAdmin) {
+            await usersCollection.updateOne(
+                { _id: existingAdmin._id },
+                {
+                    $set: {
+                        password: hashedPassword,
+                        role: "admin",
+                        isVerified: true,
+                        updatedAt: new Date()
+                    }
+                }
+            );
+            console.log("Admin password updated successfully.");
+            process.exit(0);
+        }
 
         await usersCollection.insertOne({
             name: "Admin",

@@ -15,7 +15,8 @@ const {
 
 const validate = require("../middlewares/validate");
 const verifyToken = require("../middlewares/verifyToken");
-const verifyAdmin = require("../middlewares/verifyAdmin");
+const { verifyOptionalToken } = require("../middlewares/verifyToken");
+const { verifySellerOrAdmin } = require("../middlewares/verifyVendor");
 
 const {
     createProductSchema,
@@ -34,30 +35,34 @@ router.get("/featured", getFeaturedProducts);
 
 router.get("/reviews", getLatestReviews);
 
+// Product creation (Allowed for Seller or Admin)
 router.post(
     "/",
     verifyToken,
-    verifyAdmin,
+    verifySellerOrAdmin,
     validate(createProductSchema),
     createProduct
 );
 
-router.get("/", getAllProducts);
+// Public product listing
+router.get("/", verifyOptionalToken, getAllProducts);
 
 router.get("/:id", getSingleProduct);
 
+// Product update (Allowed for Seller or Admin)
 router.patch(
     "/:id",
     verifyToken,
-    verifyAdmin,
+    verifySellerOrAdmin,
     validate(updateProductSchema),
     updateProduct
 );
 
+// Product deletion (Allowed for Seller or Admin)
 router.delete(
     "/:id",
     verifyToken,
-    verifyAdmin,
+    verifySellerOrAdmin,
     deleteProduct
 );
 

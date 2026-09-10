@@ -234,8 +234,78 @@ const refreshToken = async (req, res) => {
     }
 };
 
+const registerVendor = async (req, res) => {
+    try {
+        const { name, email, password, shopName, shopPhone, shopAddress, description } = req.body;
+
+        if (!email || !password || !shopName || !shopPhone) {
+            return res.status(400).json({
+                success: false,
+                message: "Missing required vendor registration fields."
+            });
+        }
+
+        const db = getDB();
+        const usersCollection = db.collection("users");
+        const normalizedEmail = email.trim().toLowerCase();
+
+        const existingUser = await usersCollection.findOne({ email: normalizedEmail });
+
+        if (existingUser && existingUser.role === "vendor") {
+            return res.status(400).json({
+                success: false,
+                message: "An account with this email is already registered as a seller."
+            });
+        }
+
+        const hashedPassword = await bcrypt.hash(password, 10);
+        const vendorData = {
+            shopName: shopName.trim(),
+            shopPhone: shopPhone.trim(),
+            shopAddress: shopAddress ? shopAddress.trim() : "",
+            description: description ? description.trim() : "",
+            status: "pending",
+            createdAt: new Date()
+        };
+
+        if (existingUser) {
+            await usersCollection.updateOne(
+                { _id: existingUser._id },
+                {
+                    $set: {
+                        role: "vendor",
+                        vendorInfo: vendorData
+                    }
+                }
+            );
+        } else {
+            await usersCollection.insertOne({
+                name: name ? name.trim() : shopName.trim(),
+                email: normalizedEmail,
+                password: hashedPassword,
+                role: "vendor",
+                vendorInfo: vendorData,
+                createdAt: new Date()
+            });
+        }
+
+        return res.status(201).json({
+            success: true,
+            message: "Vendor application submitted successfully! Pending admin approval."
+        });
+
+    } catch (error) {
+        console.error("registerVendor error:", error);
+        return res.status(500).json({
+            success: false,
+            message: "Internal Server Error"
+        });
+    }
+};
+
 module.exports = {
     login,
     logout,
-    refreshToken
-};
+    refreshToken,
+    registerVendor
+};

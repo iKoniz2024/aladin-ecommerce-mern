@@ -54,8 +54,20 @@ export default function Login({ children }) {
       if (user?.role === "admin") {
         toast.success("Login successful!");
         router.push("/dashboard");
+      } else if (user?.role === "vendor") {
+        const vendorStatus = user?.vendorInfo?.status;
+        if (vendorStatus === "approved") {
+          toast.success("Vendor login successful!");
+          router.push("/dashboard/vendor");
+        } else if (vendorStatus === "pending") {
+          toast.error("Your seller application is pending admin approval.");
+        } else if (vendorStatus === "suspended") {
+          toast.error("Your seller account is suspended. Contact admin.");
+        } else {
+          toast.error("Your seller application was rejected.");
+        }
       } else {
-        toast.error("Access denied. Admin only.");
+        toast.error("Invalid account role.");
       }
     } catch (err) {
       const validationErrors = err.response?.data?.errors;
@@ -83,7 +95,7 @@ export default function Login({ children }) {
   return (
     <div className="flex min-h-screen items-center justify-center bg-background px-4">
       <Helmet>
-        <title>{`Admin Login | ${siteName}`}</title>
+        <title>{`Account Login | ${siteName}`}</title>
       </Helmet>
       <div className="w-full max-w-md">
         <div className="mb-8 text-center">
@@ -93,9 +105,9 @@ export default function Login({ children }) {
 
         <Card className="border-0 shadow-xl">
           <CardHeader className="space-y-1 text-center">
-            <CardTitle className="text-2xl font-bold">Admin Login</CardTitle>
+            <CardTitle className="text-2xl font-bold">Portal Login</CardTitle>
             <CardDescription>
-              Sign in to access the admin dashboard
+              Sign in to access your Admin or Seller Dashboard
             </CardDescription>
           </CardHeader>
 
@@ -152,6 +164,13 @@ export default function Login({ children }) {
                   "Sign In"
                 )}
               </Button>
+
+              <div className="pt-3 text-center text-xs text-muted-foreground">
+                Want to sell on Aladiinn?{" "}
+                <Link href="/become-seller" className="font-bold text-primary hover:underline">
+                  Apply to Become a Seller
+                </Link>
+              </div>
             </form>
           </CardContent>
         </Card>

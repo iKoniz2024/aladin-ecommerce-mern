@@ -78,6 +78,7 @@ const createProduct = async (req, res) => {
                 qrCode: ""
             },
 
+            vendorId: req.user ? req.user.id : null,
             images,
             thumbnail
         };
@@ -228,6 +229,12 @@ const getAllProducts = async (req, res) => {
             query.brand = { $regex: escapeRegex(brand.trim()), $options: "i" };
         }
 
+        if (req.user && req.user.role === "vendor") {
+            query.vendorId = req.user.id.toString();
+        } else if (req.query.vendorId && req.query.vendorId.trim()) {
+            query.vendorId = req.query.vendorId.trim();
+        }
+
         let sortOption = { _id: -1 };
 
         if (sort === "asc") {
@@ -345,6 +352,20 @@ const updateProduct = async (req, res) => {
         const db = getDB();
         const productsCollection = db.collection("products");
 
+        const existingProduct = await productsCollection.findOne(buildIdQuery(id));
+        if (!existingProduct) {
+            return res.status(404).send({ message: "Product not found" });
+        }
+
+        // Strict ownership enforcement for ALL users (including Admin)
+        if (req.user) {
+            const currentUserId = req.user.id.toString();
+            const productVendorId = existingProduct.vendorId ? existingProduct.vendorId.toString() : null;
+            if (!productVendorId || productVendorId !== currentUserId) {
+                return res.status(403).send({ message: "Forbidden. You can only modify your own products." });
+            }
+        }
+
         const updatedFields = {
             ...req.body,
             ...(req.body.price !== undefined && { price: Number(req.body.price) }),
@@ -355,14 +376,10 @@ const updateProduct = async (req, res) => {
             "meta.updatedAt": new Date()
         };
 
-        const result = await productsCollection.updateOne(
+        await productsCollection.updateOne(
             buildIdQuery(id),
             { $set: updatedFields }
         );
-
-        if (result.matchedCount === 0) {
-            return res.status(404).send({ message: "Product not found" });
-        }
 
         clearCache();
         res.send({ message: "Product updated successfully" });
@@ -379,11 +396,21 @@ const deleteProduct = async (req, res) => {
         const db = getDB();
         const productsCollection = db.collection("products");
 
-        const result = await productsCollection.deleteOne(buildIdQuery(id));
-
-        if (result.deletedCount === 0) {
+        const existingProduct = await productsCollection.findOne(buildIdQuery(id));
+        if (!existingProduct) {
             return res.status(404).send({ message: "Product not found" });
         }
+
+        // Strict ownership enforcement for ALL users (including Admin)
+        if (req.user) {
+            const currentUserId = req.user.id.toString();
+            const productVendorId = existingProduct.vendorId ? existingProduct.vendorId.toString() : null;
+            if (!productVendorId || productVendorId !== currentUserId) {
+                return res.status(403).send({ message: "Forbidden. You can only delete your own products." });
+            }
+        }
+
+        await productsCollection.deleteOne(buildIdQuery(id));
 
         clearCache();
         res.send({ message: "Product deleted successfully" });

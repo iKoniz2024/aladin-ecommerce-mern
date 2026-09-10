@@ -15,3 +15,9 @@ export const getProfile = async () => {
   const { data } = await axiosSecure.get("/users/profile");
   return data;
 };
+
+export const registerVendor = async (payload) => {
+  const { data } = await axiosPublic.post("/auth/register-vendor", payload);
+  return data;
+};
+

@@ -50,6 +50,7 @@ const createOrder = async (req, res) => {
                             "$product.price",
                         ],
                     },
+                    vendorId: "$product.vendorId",
                 },
             },
         ]).toArray();
@@ -206,6 +207,7 @@ const createGuestOrder = async (req, res) => {
                 color: item.color || "",
                 colorImage: item.colorImage || "",
                 subtotal: item.quantity * product.price,
+                vendorId: product.vendorId ? product.vendorId.toString() : null,
             });
         }
 

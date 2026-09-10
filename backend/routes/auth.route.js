@@ -3,7 +3,8 @@ const express = require("express");
 const {
     login,
     logout,
-    refreshToken
+    refreshToken,
+    registerVendor
 } = require("../controllers/auth.controller");
 
 const validate = require("../middlewares/validate");
@@ -18,6 +19,11 @@ router.post(
     "/login",
     validate(loginSchema),
     login
+);
+
+router.post(
+    "/register-vendor",
+    registerVendor
 );
 
 router.post(
