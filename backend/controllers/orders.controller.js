@@ -6,6 +6,13 @@ const { buildIdQuery } = require("../utils/buildIdQuery");
 
 const createOrder = async (req, res) => {
     try {
+        if (req.user && (req.user.role === "admin" || req.user.role === "vendor")) {
+            return res.status(403).json({
+                success: false,
+                message: "Admins and Vendors cannot place orders"
+            });
+        }
+
         const { paymentMethod, shippingAddress, deliveryArea } = req.body;
 
         const db = getDB();

@@ -3,6 +3,13 @@ const { ObjectId } = require("mongodb");
 
 const addToCart = async (req, res) => {
     try {
+        if (req.user && (req.user.role === "admin" || req.user.role === "vendor")) {
+            return res.status(403).json({
+                success: false,
+                message: "Admins and Vendors cannot add items to cart"
+            });
+        }
+
         const { productId, quantity, size, color, colorImage } = req.body;
         const db = getDB();
         const cartsCollection = db.collection("carts");
