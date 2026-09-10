@@ -1,14 +1,16 @@
 "use client";
 
 import Link from 'next/link';
+import { useRouter } from 'next/navigation';
 import { useState } from "react";
 
 import { motion } from "framer-motion";
-import { Trophy, Flame, Star } from "lucide-react";
+import { Trophy, Flame, Star, ShoppingCart, Zap } from "lucide-react";
 import { Badge } from "@/components/ui/badge";
 import { formatBDT } from "@/utils/currency";
 import OrderModal from "@/components/ui/OrderModal";
 import { useAuth } from "@/hooks/useAuth";
+import { useAddToCart } from "@/hooks/useAddToCart";
 
 function StockBar({ stock, maxStock }) {
   if (stock === 0) return null;
@@ -28,9 +30,8 @@ function StockBar({ stock, maxStock }) {
       </div>
       <div className="h-1.5 w-full overflow-hidden rounded-full bg-muted">
         <div
-          className={`h-full rounded-full transition-all duration-500 ${
-            isLow ? "bg-foreground" : "bg-primary"
-          }`}
+          className={`h-full rounded-full transition-all duration-500 ${isLow ? "bg-foreground" : "bg-primary"
+            }`}
           style={{ width: `${percentage}%` }}
         />
       </div>
@@ -60,9 +61,12 @@ const badgeConfig = {
 };
 
 export default function ProductCard({ product, index, badge }) {
+  const router = useRouter();
+  const { addToCart } = useAddToCart();
   const [showModal, setShowModal] = useState(false);
+  const [modalMode, setModalMode] = useState("checkout");
   const { user } = useAuth();
-  const isAdmin = user?.role === "admin";
+  const isAdminOrVendor = user?.role === "admin" || user?.role === "vendor";
   const hasDiscount = product.discountPercentage > 0;
   const discountedPrice = hasDiscount
     ? (product.price * (1 - product.discountPercentage / 100)).toFixed(2)
@@ -70,6 +74,29 @@ export default function ProductCard({ product, index, badge }) {
   const isOutOfStock = product.stock === 0;
 
   const effectiveBadge = badge !== undefined ? badge : product.badge;
+  const hasOptions = (Array.isArray(product.sizes) && product.sizes.length > 0) || (Array.isArray(product.colors) && product.colors.length > 0);
+
+  const handleDirectAddToCart = async (e) => {
+    e.preventDefault();
+    if (hasOptions) {
+      setModalMode("cart");
+      setShowModal(true);
+    } else {
+      await addToCart(product, 1);
+      window.dispatchEvent(new Event("open-cart-drawer"));
+    }
+  };
+
+  const handleDirectOrderNow = async (e) => {
+    e.preventDefault();
+    if (hasOptions) {
+      setModalMode("checkout");
+      setShowModal(true);
+    } else {
+      await addToCart(product, 1);
+      router.push("/checkout");
+    }
+  };
 
   return (
     <>
@@ -86,89 +113,100 @@ export default function ProductCard({ product, index, badge }) {
             transition: { delay: i * 0.08, duration: 0.5, ease: [0.22, 1, 0.36, 1] },
           }),
         }}
+        className="w-[270px] max-w-full aspect-square h-[270px] mx-auto shrink-0"
       >
-        <Link href={`/product/${product._id}`} className="group block h-full">
-          <div className={`flex h-full flex-col overflow-hidden rounded-xl border border-border bg-card shadow-sm transition-all duration-300 hover:-translate-y-1 hover:shadow-lg ${badgeConfig[effectiveBadge]?.ring ?? ""}`}>
-            <div className="relative aspect-square overflow-hidden bg-muted">
-              <img
-                src={product.thumbnail || product.images?.[0] || undefined}
-                alt={product.title}
-                className="h-full w-full object-cover transition-transform duration-500 group-hover:scale-110"
-                loading="lazy"
-              />
+        <div className={`group flex h-[270px] w-full aspect-square flex-col overflow-hidden rounded-xl border border-border bg-card shadow-xs transition-all duration-300 hover:-translate-y-1 hover:shadow-md ${badgeConfig[effectiveBadge]?.ring ?? ""}`}>
+          <Link href={`/product/${product._id}`} className="relative h-[64%] w-full overflow-hidden bg-muted block shrink-0">
+            <img
+              src={product.thumbnail || product.images?.[0] || undefined}
+              alt={product.title}
+              className="h-full w-full object-cover transition-transform duration-500 group-hover:scale-105"
+              loading="lazy"
+            />
 
-              {hasDiscount && (
-                <div className="absolute left-0 top-3 z-10 rounded-none bg-gradient-to-r from-orange-500 via-pink-500 to-rose-500 px-1.5 py-1 text-[11px] sm:text-xs font-black text-white tracking-tight shadow-md">
-                  -{Math.round(product.discountPercentage)}%
-                </div>
-              )}
+            {hasDiscount && (
+              <div className="absolute left-0 top-1.5 z-10 rounded-none bg-gradient-to-r from-orange-500 via-pink-500 to-rose-500 px-1.5 py-0.5 text-[9px] font-black text-white tracking-tight shadow-md animate-pulse">
+                -{Math.round(product.discountPercentage)}%
+              </div>
+            )}
 
-              {effectiveBadge && badgeConfig[effectiveBadge] && (
-                <div className={`absolute top-3 z-20 ${hasDiscount ? "left-13" : "left-3"}`}>
-                  <Badge className={`gap-1 text-[11px] font-semibold ${badgeConfig[effectiveBadge].className}`}>
-                    {(() => { const Icon = badgeConfig[effectiveBadge].icon; return <Icon className="size-3" />; })()}
-                    {badgeConfig[effectiveBadge].label}
-                  </Badge>
-                </div>
-              )}
+            {effectiveBadge && badgeConfig[effectiveBadge] && (
+              <div className="absolute right-1.5 top-1.5 z-10">
+                <Badge className={`gap-1 text-[8px] sm:text-[9px] font-semibold px-1 py-0.5 ${badgeConfig[effectiveBadge].className}`}>
+                  {(() => { const Icon = badgeConfig[effectiveBadge].icon; return <Icon className="size-2.5" />; })()}
+                  <span>{badgeConfig[effectiveBadge].label}</span>
+                </Badge>
+              </div>
+            )}
 
-              {product.stock <= 5 && product.stock > 0 && (
-                <div className="absolute right-3 top-3 z-10">
-                  <Badge variant="secondary" className="text-[11px] font-semibold">
-                    Only {product.stock} left
-                  </Badge>
-                </div>
-              )}
+            {!effectiveBadge && product.stock <= 5 && product.stock > 0 && (
+              <div className="absolute right-1.5 top-1.5 z-10">
+                <Badge variant="secondary" className="text-[9px] font-semibold px-1.5 py-0.5">
+                  Only {product.stock} left
+                </Badge>
+              </div>
+            )}
 
-              {isOutOfStock && (
-                <div className="absolute inset-0 z-10 flex items-center justify-center bg-background/60 backdrop-blur-sm">
-                  <Badge variant="destructive" className="text-xs font-semibold">
-                    Out of Stock
-                  </Badge>
-                </div>
-              )}
-            </div>
+            {isOutOfStock && (
+              <div className="absolute inset-0 z-10 flex items-center justify-center bg-background/60 backdrop-blur-sm">
+                <Badge variant="destructive" className="text-[9px] font-semibold px-2 py-0.5">
+                  Out of Stock
+                </Badge>
+              </div>
+            )}
+          </Link>
 
-            <div className="flex flex-1 flex-col justify-between gap-2.5 p-3">
-              <div className="flex items-center justify-between gap-2">
-                <h3 className="truncate text-xs font-semibold text-foreground group-hover:text-primary transition-colors sm:text-sm">
+          <div className="flex h-[36%] flex-col justify-between p-2.5 bg-card shrink-0">
+            <div className="space-y-0.5">
+              <Link href={`/product/${product._id}`} className="block">
+                <h3 className="line-clamp-1 text-xs sm:text-sm font-semibold text-foreground group-hover:text-primary transition-colors">
                   {product.title}
                 </h3>
+              </Link>
 
-                <div className="flex items-baseline gap-1 shrink-0">
-                  <span className="text-xs font-bold text-foreground sm:text-sm">
-                    {formatBDT(hasDiscount ? discountedPrice : product.price)}
+              <div className="flex items-baseline gap-1 flex-wrap">
+                <span className="text-xs sm:text-sm font-bold text-foreground">
+                  {formatBDT(hasDiscount ? discountedPrice : product.price)}
+                </span>
+                {hasDiscount && (
+                  <span className="text-[9px] sm:text-[10px] text-muted-foreground line-through font-normal">
+                    {formatBDT(product.price)}
                   </span>
-                  {hasDiscount && (
-                    <span className="text-[10px] text-muted-foreground line-through">
-                      {formatBDT(product.price)}
-                    </span>
-                  )}
-                </div>
+                )}
               </div>
+            </div>
 
-              {!isAdmin && (
+            {!isAdminOrVendor && (
+              <div className="flex items-center gap-1 pt-0.5 w-full">
                 <button
                   disabled={isOutOfStock}
-                  onClick={(e) => {
-                    e.preventDefault();
-                    setShowModal(true);
-                  }}
-                  className="w-full rounded-lg bg-[#FFA800] text-[#0B3C73] py-1.5 text-xs sm:text-sm font-bold transition-all duration-200 hover:bg-[#e69500] hover:shadow-xs active:scale-[0.99] disabled:opacity-50"
+                  onClick={handleDirectAddToCart}
+                  title="Add to Cart"
+                  className="min-w-0 flex-1 flex items-center justify-center gap-0.5 rounded-full border border-blue-200/80 bg-white dark:bg-card text-[#0B3C73] dark:text-foreground py-1 px-1 text-[9px] sm:text-[10px] font-bold transition-all hover:bg-muted disabled:opacity-50 cursor-pointer shadow-2xs"
                 >
-                  {isOutOfStock ? "Unavailable" : "Order Now"}
+                  <ShoppingCart className="size-2.5 sm:size-3 shrink-0 text-[#0B3C73] dark:text-foreground" />
+                  <span className="truncate whitespace-nowrap">Add to Cart</span>
                 </button>
-              )}
-            </div>
+                <button
+                  disabled={isOutOfStock}
+                  onClick={handleDirectOrderNow}
+                  className="min-w-0 flex-1 flex items-center justify-center gap-0.5 rounded-full bg-[#FFA800] text-[#0B3C73] py-1 px-1 text-[9px] sm:text-[10px] font-bold transition-all duration-200 hover:bg-[#e69500] active:scale-[0.99] disabled:opacity-50 cursor-pointer shadow-2xs"
+                >
+                  <Zap className="size-2.5 sm:size-3 fill-current shrink-0" />
+                  <span className="truncate whitespace-nowrap">{isOutOfStock ? "Unavailable" : "Order Now"}</span>
+                </button>
+              </div>
+            )}
           </div>
-        </Link>
+        </div>
       </motion.div>
 
-      {!isAdmin && (
+      {!isAdminOrVendor && (
         <OrderModal
           product={product}
           open={showModal}
           onClose={() => setShowModal(false)}
+          mode={modalMode}
         />
       )}
     </>

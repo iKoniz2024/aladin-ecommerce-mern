@@ -11,8 +11,8 @@ import FlashSaleProductCard from "./FlashSaleProductCard";
 
 function FlashSaleSkeleton() {
   return (
-    <div className="grid grid-cols-2 gap-3.5 sm:grid-cols-3 md:grid-cols-4 lg:grid-cols-5 xl:grid-cols-6">
-      {Array.from({ length: 8 }).map((_, i) => (
+    <div className="grid grid-cols-1 gap-4 sm:grid-cols-2 lg:grid-cols-3">
+      {Array.from({ length: 6 }).map((_, i) => (
         <div key={i} className="overflow-hidden rounded-xl border border-border bg-card">
           <Skeleton className="aspect-square w-full rounded-none" />
           <div className="space-y-3 p-4">
@@ -87,7 +87,7 @@ export default function FlashSale({ initialData }) {
             No products on sale right now.
           </p>
         ) : (
-          <div className="grid grid-cols-2 gap-3.5 sm:grid-cols-3 md:grid-cols-4 lg:grid-cols-5 xl:grid-cols-6">
+          <div className="grid grid-cols-1 gap-4 sm:grid-cols-2 lg:grid-cols-3">
             {products.map((product, i) => (
               <FlashSaleProductCard
                 key={product._id}

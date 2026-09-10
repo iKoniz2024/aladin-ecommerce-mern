@@ -57,7 +57,7 @@ export default function ProductDetails({ children }) {
   const router = useRouter();
   const { addToCart } = useAddToCart();
   const { user } = useAuth();
-  const isAdmin = user?.role === "admin";
+  const isAdminOrVendor = user?.role === "admin" || user?.role === "vendor";
   const [selectedImage, setSelectedImage] = useState(0);
   const [selectedSize, setSelectedSize] = useState(null);
   const [selectedColor, setSelectedColor] = useState(null);
@@ -343,7 +343,7 @@ export default function ProductDetails({ children }) {
                   </button>
                 </div>
 
-                {!isAdmin && (
+                {!isAdminOrVendor && (
                   <Button
                     size="lg"
                     className="flex-1 rounded bg-[#FFA800] text-[#0B3C73] hover:bg-[#e69500] text-base font-extrabold shadow-md transition-all active:scale-[0.99]"

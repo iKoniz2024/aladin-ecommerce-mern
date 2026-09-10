@@ -13,7 +13,7 @@ export default function FloatingButtons() {
   const { cartCount } = useCart();
   const { user } = useAuth();
   const { contactPhone } = useSettings();
-  const isAdmin = user?.role === "admin";
+  const isAdminOrVendor = user?.role === "admin" || user?.role === "vendor";
 
   const rawNumber = contactPhone ? contactPhone.replace(/[^0-9]/g, "") : "01348060997";
   const whatsappNumber = rawNumber.startsWith("88")
@@ -65,7 +65,7 @@ export default function FloatingButtons() {
         <FaWhatsapp className="text-lg sm:text-2xl" />
       </a>
 
-      {!isAdmin && (
+      {!isAdminOrVendor && (
         <button
           type="button"
           onClick={openCartDrawer}

@@ -17,7 +17,7 @@ import { useAuth } from "@/hooks/useAuth";
 export default function StickyCartDrawer() {
   const { cartCount, refetchCartCount } = useCart();
   const { user } = useAuth();
-  const isAdmin = user?.role === "admin";
+  const isAdminOrVendor = user?.role === "admin" || user?.role === "vendor";
   const [open, setOpen] = useState(false);
   const queryClient = useQueryClient();
   const router = useRouter();
@@ -93,7 +93,7 @@ export default function StickyCartDrawer() {
   useEffect(() => setMounted(true), []);
 
   if (!mounted) return null;
-  if (isAdmin) return null;
+  if (isAdminOrVendor) return null;
 
   const content = (
     <div className={`fixed inset-0 z-9998 ${open ? "pointer-events-auto" : "pointer-events-none"}`}>

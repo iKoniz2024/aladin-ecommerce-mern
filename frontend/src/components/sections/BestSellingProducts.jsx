@@ -4,12 +4,12 @@ import { useQuery } from "@tanstack/react-query";
 import { motion } from "framer-motion";
 import { getBestSellingProducts } from "@/services/product.api";
 import { Skeleton } from "@/components/ui/skeleton";
-import ProductCard from "./ProductCard";
+import BestSellingProductCard from "./BestSellingProductCard";
 
 function BestSellingSkeleton() {
   return (
-    <div className="grid grid-cols-2 gap-3.5 sm:grid-cols-3 md:grid-cols-4 lg:grid-cols-5 xl:grid-cols-6">
-      {Array.from({ length: 8 }).map((_, i) => (
+    <div className="grid grid-cols-1 gap-4 sm:grid-cols-2 lg:grid-cols-3">
+      {Array.from({ length: 6 }).map((_, i) => (
         <div key={i} className="overflow-hidden rounded-xl border border-border bg-card">
           <Skeleton className="aspect-square w-full rounded-none" />
           <div className="space-y-3 p-4">
@@ -71,13 +71,12 @@ export default function BestSellingProducts({ initialData }) {
             No products found.
           </p>
         ) : (
-          <div className="grid grid-cols-2 gap-3.5 sm:grid-cols-3 md:grid-cols-4 lg:grid-cols-5 xl:grid-cols-6">
+          <div className="grid grid-cols-1 gap-4 sm:grid-cols-2 lg:grid-cols-3">
             {bestSellingProducts.map((product, i) => (
-              <ProductCard
+              <BestSellingProductCard
                 key={product._id}
                 product={product}
                 index={i}
-                badge={null}
               />
             ))}
           </div>

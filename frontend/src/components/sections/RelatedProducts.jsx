@@ -1,20 +1,17 @@
 "use client";
 
-import { useState } from "react";
 import Link from "next/link";
 import { useQuery } from "@tanstack/react-query";
 import { motion } from "framer-motion";
-import { ShoppingCart, Trophy, Sparkles, Star, Flame } from "lucide-react";
+import { Eye, Trophy, Sparkles, Star, Flame } from "lucide-react";
 import { getProducts, getBestSellingProducts, getNewArrivals } from "@/services/product.api";
 import { Skeleton } from "@/components/ui/skeleton";
 import { Badge } from "@/components/ui/badge";
 import { formatBDT } from "@/utils/currency";
-import OrderModal from "@/components/ui/OrderModal";
-import { useAuth } from "@/hooks/useAuth";
 
 function RelatedProductsSkeleton() {
   return (
-    <div className="grid grid-cols-2 gap-3 sm:grid-cols-3 md:grid-cols-4 lg:grid-cols-5 xl:grid-cols-6">
+    <div className="grid grid-cols-1 gap-4 sm:grid-cols-2 lg:grid-cols-3">
       {Array.from({ length: 6 }).map((_, i) => (
         <div key={i} className="flex flex-col overflow-hidden rounded-xl border border-border bg-card">
           <div className="relative aspect-square w-full p-2">
@@ -52,10 +49,6 @@ const badgeConfig = {
 };
 
 function CompactProductCard({ product, index }) {
-  const [showModal, setShowModal] = useState(false);
-  const { user } = useAuth();
-  const isAdmin = user?.role === "admin";
-
   const hasDiscount = product.discountPercentage > 0;
   const discountedPrice = hasDiscount
     ? (product.price * (1 - product.discountPercentage / 100)).toFixed(2)
@@ -65,93 +58,89 @@ function CompactProductCard({ product, index }) {
   const activeBadgeInfo = activeBadgeKey ? badgeConfig[activeBadgeKey] : null;
 
   return (
-    <>
-      <motion.div
-        custom={index}
-        initial="hidden"
-        whileInView="visible"
-        viewport={{ once: true, margin: "-40px" }}
-        variants={{
-          hidden: { opacity: 0, y: 16 },
-          visible: (i) => ({
-            opacity: 1,
-            y: 0,
-            transition: { delay: i * 0.05, duration: 0.4, ease: [0.22, 1, 0.36, 1] },
-          }),
-        }}
-      >
-        <div className="group relative flex h-full flex-col overflow-hidden rounded-xl border border-border bg-card shadow-sm transition-all duration-300 hover:-translate-y-1 hover:shadow-md">
-          {/* Image & Price Container */}
-          <Link href={`/product/${product._id}`} className="relative block aspect-square w-full overflow-hidden bg-muted">
-            {/* Badges */}
-            {activeBadgeInfo && (
-              <div className="absolute left-2 top-2 z-10">
-                <Badge className={`text-[10px] font-semibold px-2 py-0.5 shadow-md flex items-center gap-1 ${activeBadgeInfo.className}`}>
-                  {(() => {
-                    const Icon = activeBadgeInfo.icon;
-                    return <Icon className="size-3" />;
-                  })()}
-                  <span>{activeBadgeInfo.label}</span>
-                </Badge>
-              </div>
-            )}
+    <motion.div
+      custom={index}
+      initial="hidden"
+      whileInView="visible"
+      viewport={{ once: true, margin: "-40px" }}
+      variants={{
+        hidden: { opacity: 0, y: 16 },
+        visible: (i) => ({
+          opacity: 1,
+          y: 0,
+          transition: { delay: i * 0.05, duration: 0.4, ease: [0.22, 1, 0.36, 1] },
+        }),
+      }}
+      className="w-[270px] max-w-full aspect-square h-[270px] mx-auto"
+    >
+      <div className="group relative h-[270px] w-full aspect-square overflow-hidden rounded-xl border border-border bg-card shadow-xs transition-all duration-300 hover:-translate-y-1 hover:shadow-md flex flex-col">
+        <Link href={`/product/${product._id}`} className="relative h-[64%] w-full overflow-hidden bg-muted block shrink-0">
+          <img
+            src={product.thumbnail || product.images?.[0] || undefined}
+            alt={product.title}
+            className="h-full w-full object-cover transition-transform duration-500 group-hover:scale-105"
+            loading="lazy"
+          />
 
+          {/* Badges Container */}
+          <div className="absolute left-1.5 top-1.5 z-10 flex flex-wrap items-center gap-1 max-w-[calc(100%-12px)]">
             {hasDiscount && (
-              <div className="absolute left-0 top-3 z-10 rounded-none bg-gradient-to-r from-orange-500 via-pink-500 to-rose-500 px-1.5 py-1 text-[11px] sm:text-xs font-black text-white tracking-tight shadow-md">
+              <div className="rounded bg-gradient-to-r from-orange-500 via-pink-500 to-rose-500 px-1 py-0.5 text-[8px] sm:text-[9px] font-black text-white tracking-tight shadow-md">
                 -{Math.round(product.discountPercentage)}%
               </div>
             )}
+            {activeBadgeInfo && (
+              <Badge className={`text-[8px] sm:text-[9px] font-semibold px-1 py-0.5 shadow-md flex items-center gap-1 ${activeBadgeInfo.className}`}>
+                {(() => {
+                  const Icon = activeBadgeInfo.icon;
+                  return <Icon className="size-2.5" />;
+                })()}
+                <span>{activeBadgeInfo.label}</span>
+              </Badge>
+            )}
+          </div>
 
-            <img
-              src={product.thumbnail || product.images?.[0] || undefined}
-              alt={product.title}
-              className="h-full w-full object-cover transition-transform duration-500 group-hover:scale-105"
-              loading="lazy"
-            />
+          {isOutOfStock && (
+            <div className="absolute inset-0 z-20 flex items-center justify-center bg-background/70 backdrop-blur-sm">
+              <span className="rounded-full bg-destructive px-2 py-0.5 text-[9px] font-semibold text-destructive-foreground">
+                Stock Out
+              </span>
+            </div>
+          )}
+        </Link>
 
-            {/* Price Pill Overlay */}
-            <div className="absolute bottom-2 left-1/2 -translate-x-1/2 z-10 flex items-center justify-center gap-1.5 rounded-lg bg-background/95 px-2.5 py-1 shadow-sm border border-border/60 backdrop-blur-md whitespace-nowrap">
-              <span className="text-xs sm:text-sm font-bold text-foreground">
+        <div className="flex h-[36%] flex-col justify-between p-2.5 bg-card shrink-0">
+          <div className="space-y-0.5">
+            <Link href={`/product/${product._id}`} className="block">
+              <h3 className="line-clamp-1 text-xs font-semibold text-foreground group-hover:text-primary transition-colors">
+                {product.title}
+              </h3>
+            </Link>
+
+            <div className="flex items-baseline gap-1 flex-wrap">
+              <span className="text-xs font-bold text-foreground">
                 {formatBDT(hasDiscount ? discountedPrice : product.price)}
               </span>
               {hasDiscount && (
-                <span className="text-[10px] sm:text-xs text-muted-foreground line-through font-normal">
+                <span className="text-[9px] text-muted-foreground line-through">
                   {formatBDT(product.price)}
                 </span>
               )}
             </div>
+          </div>
 
-            {isOutOfStock && (
-              <div className="absolute inset-0 z-20 flex items-center justify-center bg-background/70 backdrop-blur-sm">
-                <span className="rounded-full bg-destructive px-2 py-0.5 text-[10px] font-semibold text-destructive-foreground">
-                  Stock Out
-                </span>
-              </div>
-            )}
-          </Link>
-
-          {/* Bottom Order Button */}
-          {!isAdmin && (
-            <button
-              disabled={isOutOfStock}
-              onClick={() => setShowModal(true)}
-              className="w-full flex items-center justify-center gap-1.5 bg-foreground py-2 text-xs sm:text-sm font-bold text-background transition-colors hover:bg-foreground/90 disabled:opacity-50"
+          <div className="pt-0.5">
+            <Link
+              href={`/product/${product._id}`}
+              className="flex w-full items-center justify-center gap-1 rounded-full border border-border bg-background py-1 text-[10px] font-bold text-foreground transition-all hover:bg-muted"
             >
-              <ShoppingCart className="size-3.5" />
-              <span>{isOutOfStock ? "Unavailable" : "Order Now"}</span>
-            </button>
-          )}
+              <Eye className="size-3" />
+              <span>View Details</span>
+            </Link>
+          </div>
         </div>
-      </motion.div>
-
-      {!isAdmin && (
-        <OrderModal
-          product={product}
-          open={showModal}
-          onClose={() => setShowModal(false)}
-        />
-      )}
-    </>
+      </div>
+    </motion.div>
   );
 }
 
@@ -235,7 +224,7 @@ export default function RelatedProducts({ currentProduct }) {
       {isLoading ? (
         <RelatedProductsSkeleton />
       ) : (
-        <div className="grid grid-cols-2 gap-3 sm:grid-cols-3 md:grid-cols-4 lg:grid-cols-5 xl:grid-cols-6">
+        <div className="grid grid-cols-1 gap-4 sm:grid-cols-2 lg:grid-cols-3">
           {relatedProducts.map((product, i) => (
             <CompactProductCard
               key={product._id}

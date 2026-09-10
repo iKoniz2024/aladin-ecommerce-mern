@@ -184,9 +184,8 @@ export default function Products({ initialCategories, initialProducts }) {
           )}
 
           <aside
-            className={`fixed inset-y-0 left-0 z-50 w-72 overflow-y-auto border-r border-border bg-background p-4 transition-transform duration-200 lg:static lg:translate-x-0 lg:w-56 lg:border-0 lg:p-0 lg:py-1 lg:overflow-visible ${
-              showFilters ? "translate-x-0" : "-translate-x-full"
-            }`}
+            className={`fixed inset-y-0 left-0 z-50 w-72 overflow-y-auto border-r border-border bg-background p-4 transition-transform duration-200 lg:static lg:translate-x-0 lg:w-56 lg:border-0 lg:p-0 lg:py-1 lg:overflow-visible ${showFilters ? "translate-x-0" : "-translate-x-full"
+              }`}
           >
             <div className="space-y-6 py-1 overflow-visible">
               <div className="flex items-center justify-between lg:hidden">
@@ -233,11 +232,10 @@ export default function Products({ initialCategories, initialProducts }) {
                           onClick={() => {
                             handleCategoryChange(selectedCategory === parent.slug ? "" : parent.slug);
                             if (!parent.children?.length) setShowFilters(false);
-                          }}className={`flex w-full items-center justify-between rounded-lg px-3 py-2 text-left text-sm transition-colors ${
-                            isActive
+                          }} className={`flex w-full items-center justify-between rounded-lg px-3 py-2 text-left text-sm transition-colors ${isActive
                               ? "bg-primary text-primary-foreground"
                               : "text-muted-foreground hover:bg-muted hover:text-foreground"
-                          }`}
+                            }`}
                         >
                           {parent.name}
                           {parent.children?.length > 0 && (
@@ -267,11 +265,10 @@ export default function Products({ initialCategories, initialProducts }) {
                                     handleCategoryChange(child.slug);
                                     setShowFilters(false);
                                   }}
-                                  className={`flex w-full items-center gap-2 px-4 py-1.5 text-left text-sm transition-colors ${
-                                    childActive
+                                  className={`flex w-full items-center gap-2 px-4 py-1.5 text-left text-sm transition-colors ${childActive
                                       ? "bg-primary/10 font-medium text-primary"
                                       : "text-muted-foreground hover:bg-muted hover:text-foreground"
-                                  }`}
+                                    }`}
                                 >
                                   <span className="size-1 rounded-full bg-current opacity-40" />
                                   {child.name}
@@ -295,11 +292,10 @@ export default function Products({ initialCategories, initialProducts }) {
                                     handleCategoryChange(child.slug);
                                     setShowFilters(false);
                                   }}
-                                  className={`flex w-full items-center gap-2 px-3 py-1.5 text-left text-sm transition-colors ${
-                                    childActive
+                                  className={`flex w-full items-center gap-2 px-3 py-1.5 text-left text-sm transition-colors ${childActive
                                       ? "bg-primary/10 font-medium text-primary"
                                       : "text-muted-foreground hover:bg-muted hover:text-foreground"
-                                  }`}
+                                    }`}
                                 >
                                   <span className="size-1 rounded-full bg-current opacity-40" />
                                   {child.name}
@@ -387,7 +383,7 @@ export default function Products({ initialCategories, initialProducts }) {
 
             <div className="pt-4">
               {showSkeleton ? (
-                <div className="grid grid-cols-2 gap-3.5 sm:grid-cols-3 md:grid-cols-3 lg:grid-cols-4 xl:grid-cols-4">
+                <div className="grid grid-cols-1 gap-4 sm:grid-cols-2 lg:grid-cols-3">
                   {Array.from({ length: 12 }).map((_, i) => (
                     <ProductSkeleton key={i} />
                   ))}
@@ -407,7 +403,7 @@ export default function Products({ initialCategories, initialProducts }) {
                   )}
                 </div>
               ) : (
-                <div className="grid grid-cols-2 gap-3.5 sm:grid-cols-3 md:grid-cols-3 lg:grid-cols-4 xl:grid-cols-4">
+                <div className="grid grid-cols-1 gap-4 sm:grid-cols-2 lg:grid-cols-3">
                   {filteredProducts.map((product, i) => (
                     <ProductCard key={product._id} product={product} index={i} />
                   ))}

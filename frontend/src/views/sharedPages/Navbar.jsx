@@ -118,17 +118,19 @@ const Navbar = () => {
                             {mounted && theme === "dark" ? <Sun className="size-4 text-[#FFA800]" /> : <Moon className="size-4" />}
                         </button>
 
-                        <Link
-                            href="/cart"
-                            className="relative flex size-9 items-center justify-center rounded-full border border-white/20 text-white transition-all hover:bg-white/10 hover:scale-105"
-                        >
-                            <ShoppingCart className="size-4.5 text-white" />
-                            {cartCount > 0 && (
-                                <span className="absolute -right-1.5 -top-1.5 flex size-5 items-center justify-center rounded-full bg-[#FFA800] text-[10px] font-black text-[#0B3C73] shadow-md">
-                                    {cartCount}
-                                </span>
-                            )}
-                        </Link>
+                        {(!user || (user.role !== "admin" && user.role !== "vendor")) && (
+                            <Link
+                                href="/cart"
+                                className="relative flex size-9 items-center justify-center rounded-full border border-white/20 text-white transition-all hover:bg-white/10 hover:scale-105"
+                            >
+                                <ShoppingCart className="size-4.5 text-white" />
+                                {cartCount > 0 && (
+                                    <span className="absolute -right-1.5 -top-1.5 flex size-5 items-center justify-center rounded-full bg-[#FFA800] text-[10px] font-black text-[#0B3C73] shadow-md">
+                                        {cartCount}
+                                    </span>
+                                )}
+                            </Link>
+                        )}
 
                         {mounted && (
                             user ? (

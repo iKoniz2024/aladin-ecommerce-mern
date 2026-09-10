@@ -2,13 +2,13 @@
 
 import { useRouter } from 'next/navigation';
 import { useState } from "react";
-import { X, Minus, Plus, ShoppingCart } from "lucide-react";
+import { X, Minus, Plus, ShoppingCart, Zap } from "lucide-react";
 
 import toast from "react-hot-toast";
 import { useAddToCart } from "@/hooks/useAddToCart";
 import { formatBDT } from "@/utils/currency";
 
-export default function OrderModal({ product, open, onClose }) {
+export default function OrderModal({ product, open, onClose, mode = "checkout" }) {
   const router = useRouter();
   const { addToCart } = useAddToCart();
   const [selectedSize, setSelectedSize] = useState(null);
@@ -18,6 +18,7 @@ export default function OrderModal({ product, open, onClose }) {
 
   if (!open || !product) return null;
 
+  const isCheckoutMode = mode === "checkout";
   const hasDiscount = product.discountPercentage > 0;
   const discountedPrice = hasDiscount
     ? (product.price * (1 - product.discountPercentage / 100)).toFixed(2)
@@ -25,7 +26,7 @@ export default function OrderModal({ product, open, onClose }) {
   const isOutOfStock = product.stock === 0;
   const hasSizes = Array.isArray(product.sizes) && product.sizes.length > 0;
 
-  const handleAddToCart = async () => {
+  const handleAddToCartOnly = async () => {
     if (hasSizes && !selectedSize) {
       toast.error("Please select a size");
       return;
@@ -42,7 +43,27 @@ export default function OrderModal({ product, open, onClose }) {
       selectedColor?.image || ""
     );
     onClose();
-    router.push("/cart");
+    window.dispatchEvent(new Event("open-cart-drawer"));
+  };
+
+  const handleOrderNowOnly = async () => {
+    if (hasSizes && !selectedSize) {
+      toast.error("Please select a size");
+      return;
+    }
+    if (product.colors?.length > 0 && !selectedColor) {
+      toast.error("Please select a color");
+      return;
+    }
+    await addToCart(
+      product,
+      quantity,
+      selectedSize || "",
+      selectedColor?.name || "",
+      selectedColor?.image || ""
+    );
+    onClose();
+    router.push("/checkout");
   };
 
   const previewImage = activeDisplayImage || product.thumbnail || product.images?.[0] || null;
@@ -56,7 +77,9 @@ export default function OrderModal({ product, open, onClose }) {
         onClick={(e) => e.stopPropagation()}
       >
         <div className="flex items-center justify-between border-b border-border px-6 py-4">
-          <h3 className="text-lg font-semibold text-foreground">Choose Options</h3>
+          <h3 className="text-lg font-bold text-foreground">
+            {isCheckoutMode ? "Select Options & Order Now" : "Select Options"}
+          </h3>
           <button
             onClick={onClose}
             className="flex size-8 items-center justify-center rounded-lg text-destructive transition-colors hover:bg-destructive/10 hover:text-destructive"
@@ -189,20 +212,22 @@ export default function OrderModal({ product, open, onClose }) {
           </div>
         </div>
 
-        <div className="flex items-center justify-between border-t border-border px-6 py-4">
+        <div className="flex items-center justify-between border-t border-border px-4 sm:px-6 py-3.5 gap-2.5 bg-muted/20">
           <button
-            onClick={onClose}
-            className="rounded-lg border border-border px-6 py-2.5 text-sm font-medium text-foreground transition-colors hover:bg-muted"
+            onClick={handleAddToCartOnly}
+            disabled={isOutOfStock}
+            className="flex-1 flex items-center justify-center gap-1.5 rounded-lg border border-border bg-card text-foreground px-3 py-2 text-xs sm:text-sm font-bold transition-all hover:bg-muted hover:border-foreground/30 active:scale-[0.99] disabled:opacity-50 cursor-pointer shadow-2xs"
           >
-            Close
+            <ShoppingCart className="size-4 shrink-0" />
+            <span className="truncate">Add to cart</span>
           </button>
           <button
-            onClick={handleAddToCart}
+            onClick={handleOrderNowOnly}
             disabled={isOutOfStock}
-            className="flex items-center gap-2 rounded-lg bg-[#FFA800] text-[#0B3C73] px-6 py-2.5 text-sm font-bold transition-all duration-200 hover:bg-[#e69500] hover:shadow-md active:scale-[0.99] disabled:opacity-50"
+            className="flex-1 flex items-center justify-center gap-1.5 rounded-lg bg-[#FFA800] text-[#0B3C73] px-3 py-2 text-xs sm:text-sm font-black shadow-md transition-all duration-200 hover:bg-[#e69500] active:scale-[0.99] disabled:opacity-50 cursor-pointer"
           >
-            <ShoppingCart className="size-4" />
-            Add to cart
+            <Zap className="size-4 fill-current shrink-0" />
+            <span className="truncate">Order Now</span>
           </button>
         </div>
       </div>

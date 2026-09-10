@@ -1,22 +1,51 @@
 "use client";
 
 import Link from 'next/link';
+import { useRouter } from 'next/navigation';
 import { useState } from "react";
 
 import { motion } from "framer-motion";
+import { ShoppingCart } from "lucide-react";
 import { formatBDT } from "@/utils/currency";
 import OrderModal from "@/components/ui/OrderModal";
 import { useAuth } from "@/hooks/useAuth";
+import { useAddToCart } from "@/hooks/useAddToCart";
 
 export default function NewArrivalsProductCard({ product, index }) {
+  const router = useRouter();
+  const { addToCart } = useAddToCart();
   const [showModal, setShowModal] = useState(false);
+  const [modalMode, setModalMode] = useState("checkout");
   const { user } = useAuth();
-  const isAdmin = user?.role === "admin";
+  const isAdminOrVendor = user?.role === "admin" || user?.role === "vendor";
   const hasDiscount = product.discountPercentage > 0;
   const discountedPrice = hasDiscount
     ? (product.price * (1 - product.discountPercentage / 100)).toFixed(2)
     : null;
   const isOutOfStock = product.stock === 0;
+  const hasOptions = (Array.isArray(product.sizes) && product.sizes.length > 0) || (Array.isArray(product.colors) && product.colors.length > 0);
+
+  const handleDirectAddToCart = async (e) => {
+    e.preventDefault();
+    if (hasOptions) {
+      setModalMode("cart");
+      setShowModal(true);
+    } else {
+      await addToCart(product, 1);
+      window.dispatchEvent(new Event("open-cart-drawer"));
+    }
+  };
+
+  const handleDirectOrderNow = async (e) => {
+    e.preventDefault();
+    if (hasOptions) {
+      setModalMode("checkout");
+      setShowModal(true);
+    } else {
+      await addToCart(product, 1);
+      router.push("/checkout");
+    }
+  };
 
   return (
     <>
@@ -33,64 +62,73 @@ export default function NewArrivalsProductCard({ product, index }) {
             transition: { delay: i * 0.05, duration: 0.4, ease: [0.22, 1, 0.36, 1] },
           }),
         }}
-        className="shrink-0 w-37.5 sm:w-45"
+        className="shrink-0 w-[270px] max-w-full aspect-square h-[270px]"
       >
-        <div className="overflow-hidden rounded-lg border border-border bg-card">
-          <Link href={`/product/${product._id}`} className="block">
-            <div className="relative aspect-square overflow-hidden bg-muted">
-              <img
-                src={product.thumbnail || product.images?.[0] || null}
-                alt={product.title}
-                className="h-full w-full object-cover transition-transform duration-300 hover:scale-105"
-                loading="lazy"
-              />
-              {hasDiscount && (
-                <div className="absolute left-0 top-3 z-10 rounded-none bg-gradient-to-r from-orange-500 via-pink-500 to-rose-500 px-1.5 py-1 text-[11px] sm:text-xs font-black text-white tracking-tight shadow-md">
-                  -{Math.round(product.discountPercentage)}%
-                </div>
-              )}
-              {isOutOfStock && (
-                <div className="absolute inset-0 z-10 flex items-center justify-center bg-background/60 backdrop-blur-sm">
-                  <span className="rounded bg-foreground px-2 py-1 text-[10px] font-semibold text-background">
-                    Out of Stock
-                  </span>
-                </div>
-              )}
-            </div>
+        <div className="group overflow-hidden rounded-xl border border-border bg-card flex flex-col h-[270px] w-full aspect-square shadow-xs hover:shadow-md transition-all">
+          <Link href={`/product/${product._id}`} className="relative h-[64%] w-full overflow-hidden bg-muted block shrink-0">
+            <img
+              src={product.thumbnail || product.images?.[0] || null}
+              alt={product.title}
+              className="h-full w-full object-cover transition-transform duration-300 group-hover:scale-105"
+              loading="lazy"
+            />
+            {hasDiscount && (
+              <div className="absolute left-0 top-1.5 z-10 rounded-none bg-gradient-to-r from-orange-500 via-pink-500 to-rose-500 px-1.5 py-0.5 text-[9px] font-black text-white tracking-tight shadow-md">
+                -{Math.round(product.discountPercentage)}%
+              </div>
+            )}
+            {isOutOfStock && (
+              <div className="absolute inset-0 z-10 flex items-center justify-center bg-background/60 backdrop-blur-sm">
+                <span className="rounded bg-foreground px-2 py-0.5 text-[9px] font-semibold text-background">
+                  Out of Stock
+                </span>
+              </div>
+            )}
           </Link>
 
-          <div className="p-2">
-            <div className="flex items-baseline gap-1">
-              <span className="text-sm font-bold text-foreground">
-                {formatBDT(hasDiscount ? discountedPrice : product.price)}
-              </span>
-              {hasDiscount && (
-                <span className="text-[10px] text-muted-foreground line-through">
-                  {formatBDT(product.price)}
-                </span>
-              )}
-            </div>
-          </div>
+          <div className="flex h-[36%] flex-col justify-between p-2.5 bg-card shrink-0">
+            <div className="space-y-0.5">
+              <Link href={`/product/${product._id}`} className="block">
+                <h3 className="line-clamp-1 text-xs sm:text-sm font-semibold text-foreground group-hover:text-primary transition-colors">
+                  {product.title}
+                </h3>
+              </Link>
 
-          {!isAdmin && (
-            <div className="px-2 pb-2">
-              <button
-                disabled={isOutOfStock}
-                onClick={() => setShowModal(true)}
-                className="w-full rounded bg-foreground py-1.5 text-[11px] font-medium text-background transition-colors hover:bg-foreground/90 disabled:opacity-50"
-              >
-                {isOutOfStock ? "Unavailable" : "Order Now"}
-              </button>
+              <div className="flex items-baseline gap-1 flex-wrap">
+                <span className="text-xs sm:text-sm font-bold text-foreground">
+                  {formatBDT(hasDiscount ? discountedPrice : product.price)}
+                </span>
+                {hasDiscount && (
+                  <span className="text-[9px] sm:text-[10px] text-muted-foreground line-through font-normal">
+                    {formatBDT(product.price)}
+                  </span>
+                )}
+              </div>
             </div>
-          )}
+
+            {!isAdminOrVendor && (
+              <div className="pt-0.5">
+                <button
+                  disabled={isOutOfStock}
+                  onClick={handleDirectAddToCart}
+                  title="Add to Cart"
+                  className="w-full flex items-center justify-center gap-1 rounded-full border border-blue-200/80 bg-white dark:bg-card text-[#0B3C73] dark:text-foreground py-1.5 px-2 text-[10px] sm:text-xs font-bold transition-all hover:bg-muted disabled:opacity-50 cursor-pointer shadow-2xs"
+                >
+                  <ShoppingCart className="size-3.5 shrink-0 text-[#0B3C73] dark:text-foreground" />
+                  <span>Add to Cart</span>
+                </button>
+              </div>
+            )}
+          </div>
         </div>
       </motion.div>
 
-      {!isAdmin && (
+      {!isAdminOrVendor && (
         <OrderModal
           product={product}
           open={showModal}
           onClose={() => setShowModal(false)}
+          mode={modalMode}
         />
       )}
     </>
