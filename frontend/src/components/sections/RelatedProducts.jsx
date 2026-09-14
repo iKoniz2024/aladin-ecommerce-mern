@@ -11,7 +11,7 @@ import { formatBDT } from "@/utils/currency";
 
 function RelatedProductsSkeleton() {
   return (
-    <div className="grid grid-cols-1 gap-4 sm:grid-cols-2 lg:grid-cols-3">
+    <div className="grid grid-cols-1 gap-4 sm:grid-cols-2 lg:grid-cols-4">
       {Array.from({ length: 6 }).map((_, i) => (
         <div key={i} className="flex flex-col overflow-hidden rounded-xl border border-border bg-card">
           <div className="relative aspect-square w-full p-2">
@@ -224,7 +224,7 @@ export default function RelatedProducts({ currentProduct }) {
       {isLoading ? (
         <RelatedProductsSkeleton />
       ) : (
-        <div className="grid grid-cols-1 gap-4 sm:grid-cols-2 lg:grid-cols-3">
+        <div className="grid grid-cols-1 gap-4 sm:grid-cols-2 lg:grid-cols-4">
           {relatedProducts.map((product, i) => (
             <CompactProductCard
               key={product._id}

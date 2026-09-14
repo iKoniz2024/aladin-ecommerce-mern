@@ -34,9 +34,14 @@ const useSettings = () => {
           document.head.appendChild(link);
         }
       } else {
+        // Instead of removing the link (which causes React runtime errors since React tracks it),
+        // we reset it to the default Next.js favicon if needed, or simply do nothing.
         iconLinks.forEach((link) => {
-          if (link && link.parentNode) {
-            link.parentNode.removeChild(link);
+          if (link && link.href) {
+            // Setting a fallback or ignoring, removing breaks React.
+            if (!link.href.includes('/favicon.ico')) {
+              link.href = '/favicon.ico';
+            }
           }
         });
       }
@@ -54,7 +59,10 @@ const useSettings = () => {
     instagramUrl: data?.instagramUrl || "",
     tiktokUrl: data?.tiktokUrl || "",
     youtubeUrl: data?.youtubeUrl || "",
+    metaPixelName: data?.metaPixelName || "",
     metaPixelId: data?.metaPixelId || "",
+    metaAccessToken: data?.metaAccessToken || "",
+    metaTestEventCode: data?.metaTestEventCode || "",
     metaPixels: data?.metaPixels || [],
     isLoading,
   };

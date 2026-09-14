@@ -14,6 +14,7 @@ import { Helmet } from "react-helmet-async";
 import useSettings from "@/hooks/useSettings";
 import { getProductById, updateProduct, deleteProduct } from "@/services/product.api";
 import { getCategories } from "@/services/category.api";
+import { resolveCategoryAttributes } from "@/utils/categoryAttributes";
 import { Button } from "@/components/ui/Button";
 import Input from "@/components/ui/Input";
 import { Skeleton } from "@/components/ui/skeleton";
@@ -105,21 +106,6 @@ function getAllCategorySlugs(categories) {
   return [...new Set(slugs)];
 }
 
-function resolveCategoryAttributes(selectedCategorySlug, categories) {
-  if (!selectedCategorySlug || !categories || !categories.length) return [];
-  for (const parent of categories) {
-    if (parent.slug === selectedCategorySlug) {
-      return parent.attributes || [];
-    }
-    for (const child of parent.children ?? []) {
-      if (child.slug === selectedCategorySlug || child.categories?.includes(selectedCategorySlug)) {
-        return (child.attributes && child.attributes.length > 0) ? child.attributes : (parent.attributes || []);
-      }
-    }
-  }
-  return [];
-}
-
 export default function AdminProductDetails({ children }) {
   const { siteName } = useSettings();
   const { id } = useParams();
@@ -188,7 +174,7 @@ export default function AdminProductDetails({ children }) {
   });
 
   const selectedCategorySlug = watch("category") || product?.category;
-  const currentCategoryAttributes = useMemo(
+  const { allAttributes: currentCategoryAttributes, specifications: categorySpecifications, variants: categoryVariants } = useMemo(
     () => resolveCategoryAttributes(selectedCategorySlug, categories),
     [selectedCategorySlug, categories]
   );
@@ -610,203 +596,175 @@ export default function AdminProductDetails({ children }) {
               <span>Specifications, Sizes & Variants</span>
             </div>
 
-            {/* Dynamic Category Attributes */}
-            {currentCategoryAttributes.length > 0 ? (
-              <div className="space-y-4 rounded-xl border border-border p-4 bg-muted/20">
-                <h4 className="text-xs font-bold tracking-wide uppercase text-muted-foreground">Category Attributes</h4>
-                <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
-                  {currentCategoryAttributes.map((attr) => {
-                    const isSizeAttr = attr.key === "sizes" || attr.key === "size" || (attr.type === "multi-select" && attr.label.toLowerCase().includes("size"));
-                    if (isSizeAttr) {
-                      const optionsList = (attr.options && attr.options.length > 0) ? attr.options : AVAILABLE_SIZES;
-                      return (
-                        <div key={attr.key} className="sm:col-span-2 space-y-2">
-                          <label className="text-xs font-semibold text-foreground">{attr.label} {attr.required && "*"}</label>
-                          <div className="flex flex-wrap gap-2">
-                            {optionsList.map((size) => (
-                              <button
-                                key={size}
-                                type="button"
-                                onClick={() => {
-                                  setSelectedSizes((prev) =>
-                                    prev.includes(size) ? prev.filter((s) => s !== size) : [...prev, size]
-                                  );
-                                }}
-                                className={`rounded-lg border px-3 py-1.5 text-xs font-medium transition-colors ${selectedSizes.includes(size)
-                                    ? "border-primary bg-primary text-primary-foreground font-bold shadow-xs"
-                                    : "border-border bg-background text-foreground hover:border-muted-foreground"
-                                  }`}
-                              >
-                                {size}
-                              </button>
-                            ))}
-                          </div>
-                        </div>
-                      );
-                    }
-
-                    if (attr.type === "select") {
-                      return (
-                        <div key={attr.key} className="space-y-1">
-                          <label className="text-xs font-medium text-foreground">{attr.label} {attr.unit ? `(${attr.unit})` : ''} {attr.required && "*"}</label>
-                          <select
-                            value={dynamicAttributes[attr.key] || ""}
-                            onChange={(e) => setDynamicAttributes(prev => ({ ...prev, [attr.key]: e.target.value }))}
-                            className="w-full rounded-lg border border-border bg-background px-3 py-2 text-xs outline-none focus:border-ring"
-                          >
-                            <option value="">Select {attr.label}</option>
-                            {attr.options?.map((opt) => (
-                              <option key={opt} value={opt}>{opt}</option>
-                            ))}
-                          </select>
-                        </div>
-                      );
-                    }
-
-                    if (attr.type === "multi-select") {
-                      const selectedValues = Array.isArray(dynamicAttributes[attr.key]) ? dynamicAttributes[attr.key] : [];
-                      return (
-                        <div key={attr.key} className="sm:col-span-2 space-y-2">
-                          <label className="text-xs font-medium text-foreground">{attr.label} {attr.required && "*"}</label>
-                          <div className="flex flex-wrap gap-2">
-                            {attr.options?.map((opt) => {
-                              const isSelected = selectedValues.includes(opt);
-                              return (
-                                <button
-                                  key={opt}
-                                  type="button"
-                                  onClick={() => {
-                                    const next = isSelected ? selectedValues.filter(v => v !== opt) : [...selectedValues, opt];
-                                    setDynamicAttributes(prev => ({ ...prev, [attr.key]: next }));
-                                  }}
-                                  className={`rounded-lg border px-3 py-1 text-xs font-medium transition-colors ${isSelected
-                                      ? "border-primary bg-primary text-primary-foreground font-bold shadow-xs"
-                                      : "border-border bg-background text-foreground hover:border-muted-foreground"
-                                    }`}
-                                >
-                                  {opt}
-                                </button>
-                              );
-                            })}
-                          </div>
-                        </div>
-                      );
-                    }
-
-                    if (attr.type === "boolean") {
-                      return (
-                        <div key={attr.key} className="flex items-center gap-2 pt-2">
-                          <input
-                            type="checkbox"
-                            id={`edit-attr-${attr.key}`}
-                            checked={Boolean(dynamicAttributes[attr.key])}
-                            onChange={(e) => setDynamicAttributes(prev => ({ ...prev, [attr.key]: e.target.checked }))}
-                            className="rounded border-border size-4 accent-primary"
-                          />
-                          <label htmlFor={`edit-attr-${attr.key}`} className="text-xs font-medium text-foreground cursor-pointer">
-                            {attr.label}
-                          </label>
-                        </div>
-                      );
-                    }
-
-                    return (
-                      <div key={attr.key} className="space-y-1">
-                        <label className="text-xs font-medium text-foreground">{attr.label} {attr.unit ? `(${attr.unit})` : ''} {attr.required && "*"}</label>
-                        <Input
-                          type={attr.type === "number" ? "number" : "text"}
-                          placeholder={`Enter ${attr.label}`}
-                          value={dynamicAttributes[attr.key] || ""}
-                          onChange={(e) => setDynamicAttributes(prev => ({ ...prev, [attr.key]: e.target.value }))}
-                          className="h-9 text-xs"
-                        />
-                      </div>
-                    );
-                  })}
-                </div>
-
-                {/* Size Measurements Chart Builder */}
-                {selectedSizes.length > 0 && (
-                  <div className="space-y-4 rounded-xl border border-border p-4 bg-background">
-                    <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-2 border-b border-border/50 pb-3">
-                      <div>
-                        <label className="block text-xs font-bold text-foreground">Size Measurements Chart Builder</label>
-                        <p className="text-[11px] text-muted-foreground">Enter garment measurements per size in inches</p>
-                      </div>
-                      <div className="flex items-center gap-2">
-                        <span className="text-xs font-semibold text-muted-foreground">Preset:</span>
-                        <select
-                          value={measurementPreset}
-                          onChange={(e) => setMeasurementPreset(e.target.value)}
-                          className="rounded-lg border border-border bg-background px-2.5 py-1 text-xs outline-none focus:border-ring font-medium"
-                        >
-                          {Object.entries(MEASUREMENT_PRESETS).map(([key, preset]) => (
-                            <option key={key} value={key}>
-                              {preset.label}
-                            </option>
-                          ))}
-                        </select>
-                      </div>
+            {/* Dynamic Category Specifications & Variants */}
+            {!selectedCategorySlug ? (
+              <div className="rounded-xl border border-dashed border-border p-6 text-center text-xs text-muted-foreground bg-muted/10">
+                Please select a category above to view specifications & attributes.
+              </div>
+            ) : currentCategoryAttributes.length > 0 ? (
+              <div className="space-y-5">
+                {/* Product Specifications Section */}
+                {categorySpecifications.length > 0 && (
+                  <div className="space-y-4 rounded-xl border border-border p-4 bg-muted/20">
+                    <div className="flex items-center justify-between border-b border-border/40 pb-2">
+                      <h4 className="text-xs font-bold tracking-wide uppercase text-foreground flex items-center gap-1.5">
+                        <Tag className="size-3.5 text-blue-500" /> Product Specifications
+                      </h4>
+                      <span className="text-[11px] text-muted-foreground">{categorySpecifications.length} specs</span>
                     </div>
 
-                    <div className="space-y-3">
-                      {selectedSizes.map((size) => {
-                        const activeFields = MEASUREMENT_PRESETS[measurementPreset]?.fields || [];
-                        return (
-                          <div key={size} className="flex flex-col sm:flex-row items-start sm:items-center gap-3 rounded-xl border border-border/60 bg-muted/20 p-3">
-                            <div className="size-9 shrink-0 font-bold text-xs bg-primary text-primary-foreground rounded-lg flex items-center justify-center shadow-xs">{size}</div>
-                            <div className="grid grid-cols-2 sm:grid-cols-4 gap-2 flex-1 w-full">
-                              {activeFields.map((f) => (
-                                <div key={f.key} className="space-y-1">
-                                  <label className="text-[11px] font-medium text-muted-foreground block truncate">{f.label}</label>
-                                  <Input
-                                    placeholder={f.placeholder}
-                                    value={sizeMeasurements[size]?.[f.key] || ""}
-                                    onChange={(e) =>
-                                      setSizeMeasurements((prev) => ({
-                                        ...prev,
-                                        [size]: { ...prev[size], [f.key]: e.target.value },
-                                      }))
-                                    }
-                                    className="h-8 text-xs bg-background"
-                                  />
-                                </div>
-                              ))}
+                    <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
+                      {categorySpecifications.map((attr) => {
+                        const optionsList = Array.isArray(attr.options) ? attr.options : (typeof attr.options === "string" && attr.options.trim() ? attr.options.split(",").map(s => s.trim()) : []);
+
+                        if (attr.type === "select") {
+                          return (
+                            <div key={attr.key} className="space-y-1">
+                              <label className="text-xs font-medium text-foreground">{attr.label} {attr.unit ? `(${attr.unit})` : ''} {attr.required && "*"}</label>
+                              <select
+                                value={dynamicAttributes[attr.key] || ""}
+                                onChange={(e) => setDynamicAttributes(prev => ({ ...prev, [attr.key]: e.target.value }))}
+                                className="w-full rounded-lg border border-border bg-background px-3 py-2 text-xs outline-none focus:border-ring font-medium"
+                              >
+                                <option value="">Select {attr.label}</option>
+                                {optionsList.map((opt) => (
+                                  <option key={opt} value={opt}>{opt}</option>
+                                ))}
+                              </select>
                             </div>
+                          );
+                        }
+
+                        if (attr.type === "multi-select") {
+                          const selectedValues = Array.isArray(dynamicAttributes[attr.key]) ? dynamicAttributes[attr.key] : [];
+                          return (
+                            <div key={attr.key} className="sm:col-span-2 space-y-2">
+                              <label className="text-xs font-medium text-foreground">{attr.label} {attr.unit ? `(${attr.unit})` : ''} {attr.required && "*"}</label>
+                              <div className="flex flex-wrap gap-2">
+                                {optionsList.map((opt) => {
+                                  const isSelected = selectedValues.includes(opt);
+                                  return (
+                                    <button
+                                      key={opt}
+                                      type="button"
+                                      onClick={() => {
+                                        const next = isSelected ? selectedValues.filter(v => v !== opt) : [...selectedValues, opt];
+                                        setDynamicAttributes(prev => ({ ...prev, [attr.key]: next }));
+                                      }}
+                                      className={`rounded-lg border px-3 py-1 text-xs font-medium transition-colors ${isSelected
+                                        ? "border-primary bg-primary text-primary-foreground font-bold shadow-xs"
+                                        : "border-border bg-background text-foreground hover:border-muted-foreground"
+                                        }`}
+                                    >
+                                      {opt}
+                                    </button>
+                                  );
+                                })}
+                              </div>
+                            </div>
+                          );
+                        }
+
+                        if (attr.type === "boolean") {
+                          return (
+                            <div key={attr.key} className="flex items-center gap-2 pt-2">
+                              <input
+                                type="checkbox"
+                                id={`edit-attr-${attr.key}`}
+                                checked={Boolean(dynamicAttributes[attr.key])}
+                                onChange={(e) => setDynamicAttributes(prev => ({ ...prev, [attr.key]: e.target.checked }))}
+                                className="rounded border-border size-4 accent-primary"
+                              />
+                              <label htmlFor={`edit-attr-${attr.key}`} className="text-xs font-medium text-foreground cursor-pointer">
+                                {attr.label}
+                              </label>
+                            </div>
+                          );
+                        }
+
+                        return (
+                          <div key={attr.key} className="space-y-1">
+                            <label className="text-xs font-medium text-foreground">{attr.label} {attr.unit ? `(${attr.unit})` : ''} {attr.required && "*"}</label>
+                            <Input
+                              type={attr.type === "number" ? "number" : "text"}
+                              placeholder={`Enter ${attr.label}`}
+                              value={dynamicAttributes[attr.key] || ""}
+                              onChange={(e) => setDynamicAttributes(prev => ({ ...prev, [attr.key]: e.target.value }))}
+                              className="h-9 text-xs"
+                            />
                           </div>
                         );
                       })}
                     </div>
                   </div>
                 )}
-              </div>
-            ) : (
-              <div className="space-y-4">
-                <div>
-                  <label className="mb-2 block text-xs font-semibold text-foreground">Available Sizes (Select sizes for this product)</label>
-                  <div className="flex flex-wrap gap-2">
-                    {AVAILABLE_SIZES.map((size) => (
-                      <button
-                        key={size}
-                        type="button"
-                        onClick={() => {
-                          setSelectedSizes((prev) =>
-                            prev.includes(size)
-                              ? prev.filter((s) => s !== size)
-                              : [...prev, size]
-                          );
-                        }}
-                        className={`rounded-lg border px-3 py-1.5 text-xs font-medium transition-colors ${selectedSizes.includes(size)
-                            ? "border-primary bg-primary text-primary-foreground font-bold shadow-xs"
-                            : "border-border bg-background text-foreground hover:border-muted-foreground"
-                          }`}
-                      >
-                        {size}
-                      </button>
-                    ))}
-                  </div>
-                </div>
 
+                {/* Product Option Variants Section */}
+                {categoryVariants.length > 0 && (
+                  <div className="space-y-4 rounded-xl border border-purple-500/30 p-4 bg-purple-500/5">
+                    <div className="flex items-center justify-between border-b border-purple-500/20 pb-2">
+                      <h4 className="text-xs font-bold tracking-wide uppercase text-purple-700 dark:text-purple-300 flex items-center gap-1.5">
+                        <Sliders className="size-3.5" /> Product Option Variants
+                      </h4>
+                    </div>
+
+                    <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
+                      {categoryVariants.map((attr) => {
+                        const optionsList = Array.isArray(attr.options) ? attr.options : (typeof attr.options === "string" && attr.options.trim() ? attr.options.split(",").map(s => s.trim()) : []);
+                        const isSizeVariant = attr.key === "size" || attr.key === "sizes" || attr.key === "shoe_size";
+                        const selectedValues = isSizeVariant ? selectedSizes : (Array.isArray(dynamicAttributes[attr.key]) ? dynamicAttributes[attr.key] : []);
+
+                        return (
+                          <div key={attr.key} className="sm:col-span-2 space-y-2">
+                            <div className="flex items-center justify-between">
+                              <label className="text-xs font-semibold text-foreground">{attr.label} {attr.required && "*"}</label>
+                              <span className="text-[10px] text-purple-600 dark:text-purple-400 font-medium">Variant</span>
+                            </div>
+
+                            {optionsList.length > 0 ? (
+                              <div className="flex flex-wrap gap-2">
+                                {optionsList.map((opt) => {
+                                  const isSelected = selectedValues.includes(opt);
+                                  return (
+                                    <button
+                                      key={opt}
+                                      type="button"
+                                      onClick={() => {
+                                        if (isSizeVariant) {
+                                          const nextSizes = isSelected ? selectedSizes.filter(s => s !== opt) : [...selectedSizes, opt];
+                                          setSelectedSizes(nextSizes);
+                                          setDynamicAttributes(prev => ({ ...prev, [attr.key]: nextSizes }));
+                                        } else {
+                                          const next = isSelected ? selectedValues.filter(v => v !== opt) : [...selectedValues, opt];
+                                          setDynamicAttributes(prev => ({ ...prev, [attr.key]: next }));
+                                        }
+                                      }}
+                                      className={`rounded-lg border px-3 py-1.5 text-xs font-medium transition-all ${isSelected
+                                        ? "border-purple-600 bg-purple-600 text-white font-bold shadow-xs"
+                                        : "border-border bg-background text-foreground hover:border-purple-400"
+                                        }`}
+                                    >
+                                      {opt}
+                                    </button>
+                                  );
+                                })}
+                              </div>
+                            ) : (
+                              <Input
+                                placeholder={`Enter ${attr.label} variant choices (comma separated)`}
+                                value={dynamicAttributes[attr.key] || ""}
+                                onChange={(e) => setDynamicAttributes(prev => ({ ...prev, [attr.key]: e.target.value }))}
+                                className="h-9 text-xs"
+                              />
+                            )}
+                          </div>
+                        );
+                      })}
+                    </div>
+                  </div>
+                )}
+
+                {/* Size Measurements Chart Builder */}
                 {selectedSizes.length > 0 && (
                   <div className="space-y-4 rounded-xl border border-border p-4 bg-muted/20">
                     <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-2 border-b border-border/50 pb-3">
@@ -849,7 +807,7 @@ export default function AdminProductDetails({ children }) {
                                         [size]: { ...prev[size], [f.key]: e.target.value },
                                       }))
                                     }
-                                    className="h-8 text-xs"
+                                    className="h-8 text-xs bg-background"
                                   />
                                 </div>
                               ))}
@@ -860,6 +818,10 @@ export default function AdminProductDetails({ children }) {
                     </div>
                   </div>
                 )}
+              </div>
+            ) : (
+              <div className="rounded-xl border border-dashed border-border p-4 text-center text-xs text-muted-foreground bg-muted/10">
+                No custom attributes configured for this category.
               </div>
             )}
 

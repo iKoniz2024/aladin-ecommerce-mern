@@ -74,7 +74,7 @@ export default function FloatingButtons() {
         >
           <div className="relative">
             <ShoppingCart className="size-4 sm:size-5" />
-            {cartCount > 0 && (
+            {mounted && cartCount > 0 && (
               <span className="absolute -right-2 -top-2 flex h-5 min-w-5 items-center justify-center rounded-full bg-primary px-1.5 text-[10px] font-semibold text-primary-foreground">
                 {cartCount}
               </span>

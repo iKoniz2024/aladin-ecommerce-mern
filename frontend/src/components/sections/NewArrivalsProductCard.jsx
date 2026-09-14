@@ -23,28 +23,26 @@ export default function NewArrivalsProductCard({ product, index }) {
     ? (product.price * (1 - product.discountPercentage / 100)).toFixed(2)
     : null;
   const isOutOfStock = product.stock === 0;
-  const hasOptions = (Array.isArray(product.sizes) && product.sizes.length > 0) || (Array.isArray(product.colors) && product.colors.length > 0);
+  const sizeMeasurementSizes = Array.isArray(product.sizeMeasurements)
+    ? product.sizeMeasurements.map(sm => typeof sm === 'string' ? sm : sm?.size).filter(Boolean)
+    : [];
+  const hasOptions =
+    (Array.isArray(product.sizes) && product.sizes.length > 0) ||
+    sizeMeasurementSizes.length > 0 ||
+    (Array.isArray(product.colors) && product.colors.length > 0) ||
+    (Array.isArray(product.variants) && product.variants.length > 0) ||
+    (product.attributes && typeof product.attributes === "object" && Object.entries(product.attributes).some(([k, v]) => Array.isArray(v) && v.length > 0));
 
-  const handleDirectAddToCart = async (e) => {
+  const handleDirectAddToCart = (e) => {
     e.preventDefault();
-    if (hasOptions) {
-      setModalMode("cart");
-      setShowModal(true);
-    } else {
-      await addToCart(product, 1);
-      window.dispatchEvent(new Event("open-cart-drawer"));
-    }
+    setModalMode("cart");
+    setShowModal(true);
   };
 
-  const handleDirectOrderNow = async (e) => {
+  const handleDirectOrderNow = (e) => {
     e.preventDefault();
-    if (hasOptions) {
-      setModalMode("checkout");
-      setShowModal(true);
-    } else {
-      await addToCart(product, 1);
-      router.push("/checkout");
-    }
+    setModalMode("checkout");
+    setShowModal(true);
   };
 
   return (

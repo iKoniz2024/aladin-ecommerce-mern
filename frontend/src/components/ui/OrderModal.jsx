@@ -24,7 +24,58 @@ export default function OrderModal({ product, open, onClose, mode = "checkout" }
     ? (product.price * (1 - product.discountPercentage / 100)).toFixed(2)
     : null;
   const isOutOfStock = product.stock === 0;
-  const hasSizes = Array.isArray(product.sizes) && product.sizes.length > 0;
+  const extractSizes = (prod) => {
+    if (!prod) return [];
+    const found = new Set();
+    if (Array.isArray(prod.sizes)) {
+      prod.sizes.forEach(s => typeof s === 'string' && s.trim() && found.add(s.trim()));
+    } else if (typeof prod.sizes === 'string' && prod.sizes.trim()) {
+      prod.sizes.split(',').forEach(s => s.trim() && found.add(s.trim()));
+    }
+    if (typeof prod.size === 'string' && prod.size.trim()) {
+      prod.size.split(',').forEach(s => s.trim() && found.add(s.trim()));
+    }
+    if (Array.isArray(prod.sizeMeasurements)) {
+      prod.sizeMeasurements.forEach(sm => {
+        if (typeof sm === 'string' && sm.trim()) found.add(sm.trim());
+        else if (sm && typeof sm.size === 'string' && sm.size.trim()) found.add(sm.size.trim());
+      });
+    }
+    if (Array.isArray(prod.variants)) {
+      prod.variants.forEach(v => {
+        if (v && typeof v.size === 'string' && v.size.trim()) found.add(v.size.trim());
+        if (v && v.options && typeof v.options.size === 'string' && v.options.size.trim()) found.add(v.options.size.trim());
+      });
+    }
+    if (Array.isArray(prod.options)) {
+      prod.options.forEach(opt => {
+        if (opt && opt.name && opt.name.toLowerCase().includes('size') && Array.isArray(opt.values)) {
+          opt.values.forEach(val => typeof val === 'string' && val.trim() && found.add(val.trim()));
+        }
+      });
+    }
+    if (prod.attributes && typeof prod.attributes === 'object') {
+      Object.entries(prod.attributes).forEach(([k, v]) => {
+        const keyLower = k.toLowerCase().replace(/_/g, ' ');
+        if (keyLower.includes('size')) {
+          if (Array.isArray(v)) {
+            v.forEach(val => typeof val === 'string' && val.trim() && found.add(val.trim()));
+          } else if (typeof v === 'string' && v.trim()) {
+            v.split(',').forEach(val => val.trim() && found.add(val.trim()));
+          }
+        }
+      });
+    }
+
+    return Array.from(found);
+  };
+
+  const availableSizes = extractSizes(product);
+  const hasSizes = availableSizes.length > 0;
+
+  if (availableSizes.length === 1 && !selectedSize) {
+    setSelectedSize(availableSizes[0]);
+  }
 
   const handleAddToCartOnly = async () => {
     if (hasSizes && !selectedSize) {
@@ -170,16 +221,33 @@ export default function OrderModal({ product, open, onClose, mode = "checkout" }
 
             {hasSizes && (
               <div>
-                <p className="mb-2 text-sm font-medium text-foreground">Choose Size</p>
-                <div className="flex flex-wrap gap-2">
-                  {product.sizes.map((size) => (
+                <label className="mb-1.5 block text-sm font-semibold text-foreground">
+                  Select Size <span className="text-destructive">*</span>
+                </label>
+                <div className="relative">
+                  <select
+                    value={selectedSize || ""}
+                    onChange={(e) => setSelectedSize(e.target.value)}
+                    className="w-full rounded-lg border border-input bg-background px-3.5 py-2.5 text-sm font-medium text-foreground shadow-xs outline-none focus:border-primary focus:ring-2 focus:ring-primary/20 transition-all cursor-pointer"
+                  >
+                    <option value="">-- Choose Size --</option>
+                    {availableSizes.map((size) => (
+                      <option key={size} value={size}>
+                        Size: {size}
+                      </option>
+                    ))}
+                  </select>
+                </div>
+                <div className="mt-2.5 flex flex-wrap gap-2">
+                  {availableSizes.map((size) => (
                     <button
                       key={size}
+                      type="button"
                       onClick={() => setSelectedSize(size)}
-                      className={`rounded-lg border px-4 py-2 text-sm font-medium transition-all ${
+                      className={`rounded-lg border px-3.5 py-1.5 text-xs font-semibold transition-all cursor-pointer ${
                         selectedSize === size
-                          ? "border-foreground bg-foreground text-background"
-                          : "border-border text-foreground hover:border-foreground/50"
+                          ? "border-primary bg-primary text-primary-foreground shadow-xs ring-2 ring-primary/30"
+                          : "border-border bg-card text-foreground hover:border-foreground/50"
                       }`}
                     >
                       {size}

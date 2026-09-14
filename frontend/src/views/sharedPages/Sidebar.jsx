@@ -119,7 +119,7 @@ export default function Sidebar({ open, onClose }) {
               {logo ? (
                 <img src={logo} alt={siteName} className="h-9 w-auto object-contain dark:invert" />
               ) : (
-                <span className="text-lg font-black text-foreground">{siteName || "Aladiinn"}</span>
+                <span suppressHydrationWarning className="text-lg font-black text-foreground">{siteName || "Aladiinn"}</span>
               )}
             </Link>
           </div>

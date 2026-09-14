@@ -36,7 +36,10 @@ export default function AdminSettings({ children }) {
   const [instagramUrl, setInstagramUrl] = useState("");
   const [tiktokUrl, setTiktokUrl] = useState("");
   const [youtubeUrl, setYoutubeUrl] = useState("");
+  const [metaPixelName, setMetaPixelName] = useState("");
   const [metaPixelId, setMetaPixelId] = useState("");
+  const [metaAccessToken, setMetaAccessToken] = useState("");
+  const [metaTestEventCode, setMetaTestEventCode] = useState("");
   const [metaPixels, setMetaPixels] = useState([]);
   const [emailEdited, setEmailEdited] = useState(false);
   const [phoneEdited, setPhoneEdited] = useState(false);
@@ -46,7 +49,10 @@ export default function AdminSettings({ children }) {
   const [instaEdited, setInstaEdited] = useState(false);
   const [tiktokEdited, setTiktokEdited] = useState(false);
   const [ytEdited, setYtEdited] = useState(false);
+  const [pixelNameEdited, setPixelNameEdited] = useState(false);
   const [pixelIdEdited, setPixelIdEdited] = useState(false);
+  const [tokenEdited, setTokenEdited] = useState(false);
+  const [testCodeEdited, setTestCodeEdited] = useState(false);
   const [pixelsEdited, setPixelsEdited] = useState(false);
 
   const displaySiteName = siteNameEdited ? siteName : (data?.siteName || "");
@@ -59,7 +65,10 @@ export default function AdminSettings({ children }) {
   const displayInstagramUrl = instaEdited ? instagramUrl : (data?.instagramUrl || "");
   const displayTiktokUrl = tiktokEdited ? tiktokUrl : (data?.tiktokUrl || "");
   const displayYoutubeUrl = ytEdited ? youtubeUrl : (data?.youtubeUrl || "");
+  const displayMetaPixelName = pixelNameEdited ? metaPixelName : (data?.metaPixelName || "");
   const displayMetaPixelId = pixelIdEdited ? metaPixelId : (data?.metaPixelId || "");
+  const displayMetaAccessToken = tokenEdited ? metaAccessToken : (data?.metaAccessToken || "");
+  const displayMetaTestEventCode = testCodeEdited ? metaTestEventCode : (data?.metaTestEventCode || "");
   const displayMetaPixels = pixelsEdited ? metaPixels : (data?.metaPixels || []);
 
   const handleSiteNameChange = (e) => {
@@ -144,7 +153,10 @@ export default function AdminSettings({ children }) {
       instagramUrl: displayInstagramUrl,
       tiktokUrl: displayTiktokUrl,
       youtubeUrl: displayYoutubeUrl,
+      metaPixelName: displayMetaPixelName,
       metaPixelId: displayMetaPixelId,
+      metaAccessToken: displayMetaAccessToken,
+      metaTestEventCode: displayMetaTestEventCode,
       metaPixels: displayMetaPixels,
     });
   };
@@ -295,29 +307,55 @@ export default function AdminSettings({ children }) {
         <div className="border-t border-border pt-6 space-y-4">
           <div className="flex items-center justify-between">
             <div>
-              <h3 className="text-base font-semibold text-foreground">Meta Pixel (Facebook Pixel)</h3>
-              <p className="text-xs text-muted-foreground">Configure Meta Pixel ID for tracking store events</p>
+              <h3 className="text-base font-semibold text-foreground">Meta Pixel & Conversions API (CAPI)</h3>
+              <p className="text-xs text-muted-foreground">Configure Meta Pixel ID and Conversions API (CAPI) Access Token for tracking store events</p>
             </div>
           </div>
 
-          <div>
-            <label className="mb-1 block text-sm font-medium text-foreground">Meta Pixel ID (Primary)</label>
-            <Input
-              value={displayMetaPixelId}
-              onChange={(e) => { setPixelIdEdited(true); setMetaPixelId(e.target.value); }}
-              placeholder="e.g. 123456789012345 (separate multiple IDs with comma)"
-            />
-            <p className="mt-1 text-xs text-muted-foreground">Enter your Meta Pixel ID from Facebook Events Manager.</p>
+          <div className="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-4 gap-3">
+            <div>
+              <label className="mb-1 block text-sm font-medium text-foreground">Pixel Name</label>
+              <Input
+                value={displayMetaPixelName}
+                onChange={(e) => { setPixelNameEdited(true); setMetaPixelName(e.target.value); }}
+                placeholder="e.g. Primary Pixel"
+              />
+            </div>
+            <div>
+              <label className="mb-1 block text-sm font-medium text-foreground">Dataset / Pixel ID</label>
+              <Input
+                value={displayMetaPixelId}
+                onChange={(e) => { setPixelIdEdited(true); setMetaPixelId(e.target.value); }}
+                placeholder="e.g. 1767220244512872"
+              />
+            </div>
+            <div>
+              <label className="mb-1 block text-sm font-medium text-foreground">Access Token</label>
+              <Input
+                type="password"
+                value={displayMetaAccessToken}
+                onChange={(e) => { setTokenEdited(true); setMetaAccessToken(e.target.value); }}
+                placeholder="EAA19QSSR708..."
+              />
+            </div>
+            <div>
+              <label className="mb-1 block text-sm font-medium text-foreground">Test Code (Optional)</label>
+              <Input
+                value={displayMetaTestEventCode}
+                onChange={(e) => { setTestCodeEdited(true); setMetaTestEventCode(e.target.value); }}
+                placeholder="e.g. TEST81289"
+              />
+            </div>
           </div>
 
           <div className="space-y-3 pt-2">
             <div className="flex items-center justify-between">
-              <label className="text-sm font-medium text-foreground">Additional Meta Pixels</label>
+              <label className="text-sm font-medium text-foreground">Additional Meta Pixels / CAPI Credentials</label>
               <button
                 type="button"
                 onClick={() => {
                   setPixelsEdited(true);
-                  setMetaPixels([...displayMetaPixels, { name: "", pixelId: "" }]);
+                  setMetaPixels([...displayMetaPixels, { name: "", pixelId: "", accessToken: "", testEventCode: "" }]);
                 }}
                 className="flex items-center gap-1 text-xs font-medium text-primary hover:underline"
               >
@@ -326,9 +364,9 @@ export default function AdminSettings({ children }) {
             </div>
 
             {displayMetaPixels.length > 0 && (
-              <div className="space-y-2">
+              <div className="space-y-3">
                 {displayMetaPixels.map((pixel, index) => (
-                  <div key={index} className="flex items-center gap-2">
+                  <div key={index} className="flex flex-col md:flex-row items-center gap-2 border border-border/50 p-3 rounded-lg bg-card/50">
                     <Input
                       value={pixel.name || ""}
                       onChange={(e) => {
@@ -337,8 +375,8 @@ export default function AdminSettings({ children }) {
                         updated[index] = { ...updated[index], name: e.target.value };
                         setMetaPixels(updated);
                       }}
-                      placeholder="Pixel Name (e.g. Backup Pixel)"
-                      className="flex-1"
+                      placeholder="Name (e.g. Backup Pixel)"
+                      className="w-full md:w-1/4"
                     />
                     <Input
                       value={pixel.pixelId || ""}
@@ -348,8 +386,31 @@ export default function AdminSettings({ children }) {
                         updated[index] = { ...updated[index], pixelId: e.target.value };
                         setMetaPixels(updated);
                       }}
-                      placeholder="Pixel ID (Numbers only)"
-                      className="flex-1"
+                      placeholder="Pixel ID"
+                      className="w-full md:w-1/4"
+                    />
+                    <Input
+                      type="password"
+                      value={pixel.accessToken || ""}
+                      onChange={(e) => {
+                        setPixelsEdited(true);
+                        const updated = [...displayMetaPixels];
+                        updated[index] = { ...updated[index], accessToken: e.target.value };
+                        setMetaPixels(updated);
+                      }}
+                      placeholder="Access Token"
+                      className="w-full md:w-1/3"
+                    />
+                    <Input
+                      value={pixel.testEventCode || ""}
+                      onChange={(e) => {
+                        setPixelsEdited(true);
+                        const updated = [...displayMetaPixels];
+                        updated[index] = { ...updated[index], testEventCode: e.target.value };
+                        setMetaPixels(updated);
+                      }}
+                      placeholder="Test Code"
+                      className="w-full md:w-1/6"
                     />
                     <button
                       type="button"
@@ -358,7 +419,7 @@ export default function AdminSettings({ children }) {
                         const updated = displayMetaPixels.filter((_, i) => i !== index);
                         setMetaPixels(updated);
                       }}
-                      className="flex size-9 items-center justify-center rounded-lg border border-destructive/20 text-destructive hover:bg-destructive/10 hover:text-destructive transition-colors"
+                      className="flex size-9 shrink-0 items-center justify-center rounded-lg border border-destructive/20 text-destructive hover:bg-destructive/10 hover:text-destructive transition-colors"
                     >
                       <Trash2 className="size-4" />
                     </button>

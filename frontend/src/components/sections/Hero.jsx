@@ -1,7 +1,7 @@
 "use client";
 
 import Link from "next/link";
-import { useMemo } from "react";
+import { useMemo, useState, useEffect } from "react";
 import { Swiper, SwiperSlide } from "swiper/react";
 import { Autoplay, Pagination, Navigation } from "swiper/modules";
 import { ChevronLeft, ChevronRight, ChevronRight as ArrowRightIcon, Zap, Store, Layers, Sparkles } from "lucide-react";
@@ -9,6 +9,7 @@ import { useQuery } from "@tanstack/react-query";
 import { getBanners } from "@/services/banner.api";
 import { getCategoriesWithCounts } from "@/services/category.api";
 import { getFlashSaleProducts } from "@/services/product.api";
+import { getFeaturedVendor } from "@/services/vendor.api";
 import CountdownTimer from "./CountdownTimer";
 
 import "swiper/css";
@@ -31,6 +32,12 @@ const heroStyles = `
 `;
 
 export default function Hero({ initialData }) {
+  const [isMounted, setIsMounted] = useState(false);
+
+  useEffect(() => {
+    setIsMounted(true);
+  }, []);
+
   // Banners query
   const { data: bannerData, isLoading: isBannerLoading } = useQuery({
     queryKey: ["banners"],
@@ -50,17 +57,27 @@ export default function Hero({ initialData }) {
     queryFn: getFlashSaleProducts,
   });
 
+  // Featured Vendor query
+  const { data: featuredVendorData } = useQuery({
+    queryKey: ["featured-vendor"],
+    queryFn: getFeaturedVendor,
+  });
+
   const banners = useMemo(() => {
-    return (bannerData ?? []).filter((b) => b.isActive && (b.image || b.images?.length > 0));
+    const data = Array.isArray(bannerData) ? bannerData : bannerData?.banners || [];
+    return data.filter((b) => b.isActive && (b.image || b.images?.length > 0));
   }, [bannerData]);
 
   const categories = useMemo(() => {
-    return (categoryData ?? []).slice(0, 9);
+    const data = Array.isArray(categoryData) ? categoryData : categoryData?.categories || [];
+    return data.slice(0, 9);
   }, [categoryData]);
 
-  const flashProduct = useMemo(() => {
-    return flashData?.products?.[0] || null;
+  const flashProducts = useMemo(() => {
+    return flashData?.products || [];
   }, [flashData]);
+
+  const featuredVendor = featuredVendorData?.vendor || null;
 
   return (
     <section id="hero" className="relative overflow-hidden py-4 sm:py-6">
@@ -179,16 +196,37 @@ export default function Hero({ initialData }) {
                   </span>
                   <Store className="size-4 text-muted-foreground" />
                 </div>
-                <h4 className="text-sm font-bold text-foreground">Top Rated Seller</h4>
-                <p className="mt-1 text-xs text-muted-foreground line-clamp-2">
-                  Discover verified multi-vendor stores offering exclusive discounts & original products.
-                </p>
+                
+                {featuredVendor ? (
+                  <div className="mt-2 flex items-center gap-3">
+                    {featuredVendor.vendorInfo?.shopLogo ? (
+                      <img src={featuredVendor.vendorInfo.shopLogo} alt={featuredVendor.vendorInfo.shopName} className="size-12 rounded-lg object-cover border border-border/50" />
+                    ) : (
+                      <div className="size-12 rounded-lg bg-muted flex items-center justify-center text-xs font-bold text-foreground">
+                        {featuredVendor.vendorInfo?.shopName?.charAt(0) || "S"}
+                      </div>
+                    )}
+                    <div className="truncate flex-1">
+                      <h4 className="text-sm font-bold text-foreground truncate">{featuredVendor.vendorInfo?.shopName || "Top Rated Seller"}</h4>
+                      <p className="text-[10px] text-muted-foreground mt-0.5 truncate">
+                        {featuredVendor.email}
+                      </p>
+                    </div>
+                  </div>
+                ) : (
+                  <>
+                    <h4 className="text-sm font-bold text-foreground mt-2">Top Rated Seller</h4>
+                    <p className="mt-1 text-xs text-muted-foreground line-clamp-2">
+                      Discover verified multi-vendor stores offering exclusive discounts & original products.
+                    </p>
+                  </>
+                )}
               </div>
               <Link
-                href="/products"
+                href={featuredVendor ? `/products?shopName=${encodeURIComponent(featuredVendor.vendorInfo?.shopName || "")}` : "/products"}
                 className="mt-3 block w-full rounded-xl bg-foreground px-3 py-2 text-center text-xs font-semibold text-background transition-all hover:opacity-90 shadow-xs"
               >
-                Explore Stores
+                {featuredVendor ? "Visit Store" : "Explore Stores"}
               </Link>
             </div>
 
@@ -202,31 +240,45 @@ export default function Hero({ initialData }) {
                   <span className="text-[10px] font-bold uppercase text-muted-foreground">Limited</span>
                 </div>
                 
-                {flashProduct ? (
-                  <div className="flex gap-3 items-center my-1">
-                    <img
-                      src={flashProduct.images?.[0] || flashProduct.image}
-                      alt={flashProduct.name}
-                      className="size-12 rounded-lg object-cover border border-border/50"
-                    />
-                    <div className="truncate">
-                      <h5 className="text-xs font-bold text-foreground truncate">{flashProduct.name}</h5>
-                      <div className="flex items-center gap-1.5 mt-0.5">
-                        <span className="text-xs font-extrabold text-rose-600">৳{flashProduct.price}</span>
-                        {flashProduct.originalPrice && (
-                          <span className="text-[10px] text-muted-foreground line-through">৳{flashProduct.originalPrice}</span>
-                        )}
-                      </div>
-                    </div>
-                  </div>
+                {!isMounted ? (
+                  <p className="text-xs text-muted-foreground">Don't miss today's special deal discounts!</p>
+                ) : flashProducts.length > 0 ? (
+                  <Swiper
+                    modules={[Autoplay]}
+                    speed={800}
+                    autoplay={{ delay: 3000, disableOnInteraction: false }}
+                    loop={flashProducts.length > 1}
+                    className="w-full"
+                  >
+                    {flashProducts.map((fp) => (
+                      <SwiperSlide key={fp._id || fp.id}>
+                        <Link href={`/product/${fp._id}`} className="group flex gap-4 items-center my-2">
+                          <img
+                            src={fp.thumbnail || fp.images?.[0] || fp.image}
+                            alt={fp.title || fp.name}
+                            className="size-16 sm:size-20 rounded-xl object-cover border border-border/50 shrink-0"
+                          />
+                          <div className="truncate flex-1">
+                            <h5 className="text-sm font-bold text-foreground truncate mb-1 group-hover:text-rose-600 transition-colors">{fp.title || fp.name}</h5>
+                            <div className="flex items-center gap-2 mt-0.5">
+                              <span className="text-sm sm:text-base font-extrabold text-rose-600">৳{fp.discountPercentage > 0 ? (fp.price * (1 - fp.discountPercentage / 100)).toFixed(0) : fp.price}</span>
+                              {fp.discountPercentage > 0 && (
+                                <span className="text-xs text-muted-foreground line-through">৳{fp.price}</span>
+                              )}
+                            </div>
+                          </div>
+                        </Link>
+                      </SwiperSlide>
+                    ))}
+                  </Swiper>
                 ) : (
                   <p className="text-xs text-muted-foreground">Don't miss today's special deal discounts!</p>
                 )}
               </div>
 
-              <div className="mt-2">
-                <div className="mb-2">
-                  <CountdownTimer className="text-[10px]" />
+              <div className="mt-3">
+                <div className="mb-3 flex justify-center">
+                  <CountdownTimer size="sm" />
                 </div>
                 <Link
                   href="/products"

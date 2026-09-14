@@ -6,7 +6,8 @@ const attributeDefSchema = z.object({
     type: z.enum(["text", "number", "select", "multi-select", "boolean"]).default("text"),
     options: z.array(z.string()).optional().default([]),
     required: z.boolean().optional().default(false),
-    unit: z.string().optional().default("")
+    unit: z.string().optional().default(""),
+    useAsVariant: z.boolean().optional().default(false)
 });
 
 const createCategorySchema = z.object({

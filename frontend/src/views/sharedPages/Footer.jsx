@@ -56,7 +56,7 @@ export default function Footer() {
                 <img src={logo} alt={siteName} className="h-20 sm:h-28 w-auto object-contain" />
               </Link>
             )}
-            <p className="text-sm leading-relaxed text-blue-100/80">
+            <p suppressHydrationWarning className="text-sm leading-relaxed text-blue-100/80">
               {siteName} — providing elegance & lucrative outfit items sourced both locally & globally.
             </p>
           </div>
@@ -146,7 +146,7 @@ export default function Footer() {
       {/* Copyright */}
       <div className="border-t border-white/10 bg-[#082d56]">
         <div className="mx-auto flex max-w-7xl flex-col items-center justify-between gap-3 px-4 py-4 sm:flex-row sm:px-6 lg:px-8">
-          <p className="text-xs text-blue-100/70">
+          <p suppressHydrationWarning className="text-xs text-blue-100/70">
             &copy; {new Date().getFullYear()} {siteName}. All rights reserved.
           </p>
           <div className="flex gap-4 text-xs text-blue-100/70">

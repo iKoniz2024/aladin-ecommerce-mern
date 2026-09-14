@@ -155,9 +155,68 @@ const getVendorOrders = async (req, res) => {
     }
 };
 
+// Public: Get a featured (approved) vendor based on order count
+const getFeaturedVendor = async (req, res) => {
+    try {
+        const db = getDB();
+        const usersCollection = db.collection("users");
+        const ordersCollection = db.collection("orders");
+
+        // Find vendor with most items sold
+        const topVendors = await ordersCollection.aggregate([
+            { $unwind: "$items" },
+            { $match: { "items.vendorId": { $exists: true, $ne: null } } },
+            { $group: { _id: "$items.vendorId", salesCount: { $sum: 1 } } },
+            { $sort: { salesCount: -1 } }
+        ]).toArray();
+
+        let featuredVendor = null;
+
+        // Try to find the top approved vendor
+        for (const data of topVendors) {
+            try {
+                const vendor = await usersCollection.findOne({
+                    _id: new ObjectId(data._id),
+                    role: "vendor",
+                    "vendorInfo.status": "approved"
+                }, { projection: { password: 0 } });
+
+                if (vendor) {
+                    featuredVendor = vendor;
+                    break;
+                }
+            } catch (err) {
+                // Invalid ObjectId or other issue, just continue to next
+                continue;
+            }
+        }
+
+        // Fallback: If no top vendor found (e.g. no orders yet), just pick any approved vendor
+        if (!featuredVendor) {
+            featuredVendor = await usersCollection.findOne(
+                { role: "vendor", "vendorInfo.status": "approved" },
+                { projection: { password: 0 } }
+            );
+        }
+
+        if (!featuredVendor) {
+            return res.status(404).json({ success: false, message: "No featured vendor found." });
+        }
+
+        res.status(200).json({
+            success: true,
+            vendor: featuredVendor
+        });
+    } catch (error) {
+        console.error("getFeaturedVendor error:", error);
+        res.status(500).json({ success: false, message: "Internal Server Error" });
+    }
+};
+
 module.exports = {
     getAllVendors,
     updateVendorStatus,
     getVendorDashboardStats,
-    getVendorOrders
+    getVendorOrders,
+    getFeaturedVendor
 };

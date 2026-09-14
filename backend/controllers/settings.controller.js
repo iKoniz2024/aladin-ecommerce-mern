@@ -18,7 +18,7 @@ const getSettings = async (req, res) => {
 
 const updateSettings = async (req, res) => {
   try {
-    const { siteName, logo, contactEmail, contactPhone, address, googleMapLink, facebookUrl, instagramUrl, tiktokUrl, youtubeUrl, metaPixelId, metaPixels } = req.body;
+    const { siteName, logo, contactEmail, contactPhone, address, googleMapLink, facebookUrl, instagramUrl, tiktokUrl, youtubeUrl, metaPixelName, metaPixelId, metaAccessToken, metaTestEventCode, metaPixels } = req.body;
 
     const updateData = {};
 
@@ -32,7 +32,10 @@ const updateSettings = async (req, res) => {
     if (instagramUrl !== undefined) updateData.instagramUrl = instagramUrl;
     if (tiktokUrl !== undefined) updateData.tiktokUrl = tiktokUrl;
     if (youtubeUrl !== undefined) updateData.youtubeUrl = youtubeUrl;
+    if (metaPixelName !== undefined) updateData.metaPixelName = metaPixelName;
     if (metaPixelId !== undefined) updateData.metaPixelId = metaPixelId;
+    if (metaAccessToken !== undefined) updateData.metaAccessToken = metaAccessToken;
+    if (metaTestEventCode !== undefined) updateData.metaTestEventCode = metaTestEventCode;
     if (metaPixels !== undefined) updateData.metaPixels = metaPixels;
 
     if (Object.keys(updateData).length === 0) {

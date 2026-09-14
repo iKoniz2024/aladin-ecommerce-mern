@@ -3,6 +3,7 @@ const { getDB } = require("../config/db");
 const { sendMail } = require("../config/mail");
 const { withCache, clearCache } = require("../utils/cache");
 const { buildIdQuery } = require("../utils/buildIdQuery");
+const { sendPurchaseEvent } = require("../services/metaCapi.service");
 
 const createOrder = async (req, res) => {
     try {
@@ -156,6 +157,7 @@ const createOrder = async (req, res) => {
         clearCache();
 
         sendInvoiceEmail(order).catch((err) => console.error("Error sending invoice email:", err));
+        sendPurchaseEvent(order, req);
 
         res.status(201).send({
             message: "Order placed successfully",
@@ -270,6 +272,7 @@ const createGuestOrder = async (req, res) => {
         clearCache();
 
         sendInvoiceEmail(order).catch((err) => console.error("Error sending invoice email:", err));
+        sendPurchaseEvent(order, req);
 
         res.status(201).send({
             message: "Order placed successfully",
@@ -954,7 +957,7 @@ const sendInvoice = async (req, res) => {
         res.status(500).send({ message: "Failed to send invoice" });
     }
 };
- 
+
 const getDashboardStats = async (req, res) => {
     try {
         const db = getDB();

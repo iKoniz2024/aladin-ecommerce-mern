@@ -7,10 +7,14 @@ const {
     getAllVendors,
     updateVendorStatus,
     getVendorDashboardStats,
-    getVendorOrders
+    getVendorOrders,
+    getFeaturedVendor
 } = require("../controllers/vendor.controller");
 
 const router = express.Router();
+
+// Public Routes
+router.get("/public/featured", getFeaturedVendor);
 
 // Admin Routes
 router.get("/admin/all", verifyToken, verifyAdmin, getAllVendors);

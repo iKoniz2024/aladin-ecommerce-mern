@@ -1,4 +1,11 @@
+import axiosPublic from "../utils/axiosPublic";
 import axiosSecure from "../utils/axiosSecure";
+
+// Public APIs
+export const getFeaturedVendor = async () => {
+  const { data } = await axiosPublic.get("/vendors/public/featured");
+  return data;
+};
 
 // Admin APIs
 export const getAllVendors = async () => {
