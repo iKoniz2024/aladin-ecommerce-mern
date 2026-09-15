@@ -9,10 +9,9 @@ import StickyCardDrawer from "@/components/shared/StickyCardDrawer";
 export default function MainLayout({ children }) {
   return (
     <>
-      <div className="flex min-h-screen flex-col bg-background">
-        <Suspense fallback={<div className="h-16 sm:h-20 bg-background" />}>
-          <Navbar />
-        </Suspense>
+      <div>
+
+        <Navbar />
 
         <main className="flex-1">
           {children}

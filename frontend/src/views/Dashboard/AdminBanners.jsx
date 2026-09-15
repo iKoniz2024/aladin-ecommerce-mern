@@ -257,7 +257,12 @@ export default function AdminBanners({ children }) {
                 </div>
 
                 <div>
-                  <label className="mb-1 block text-sm font-medium text-foreground">Image *</label>
+                  <div className="flex items-center justify-between mb-1">
+                    <label className="block text-sm font-medium text-foreground">Image *</label>
+                    <span className="text-[11px] font-semibold text-primary bg-primary/10 px-2 py-0.5 rounded-md">
+                      Recommended: 1200 × 500 px (2.4:1)
+                    </span>
+                  </div>
                   <input
                     ref={createFileRef}
                     type="file"
@@ -268,10 +273,11 @@ export default function AdminBanners({ children }) {
                   <button
                     type="button"
                     onClick={() => createFileRef.current?.click()}
-                    className="flex w-full items-center justify-center gap-2 rounded-lg border-2 border-dashed border-border p-6 text-sm text-muted-foreground transition-colors hover:border-primary/50 hover:bg-muted/50"
+                    className="flex w-full flex-col items-center justify-center gap-1 rounded-lg border-2 border-dashed border-border p-5 text-sm text-muted-foreground transition-colors hover:border-primary/50 hover:bg-muted/50"
                   >
                     <Upload className="size-5" />
-                    Click to upload image
+                    <span className="font-medium text-foreground">Click to upload image</span>
+                    <span className="text-[11px] text-muted-foreground">Best Resolution: 1200 × 500 pixels (PNG, JPG, WEBP)</span>
                   </button>
                   {createPreview && (
                     <div className="mt-3 relative inline-block">
@@ -414,7 +420,12 @@ export default function AdminBanners({ children }) {
                       </div>
 
                       <div>
-                        <label className="mb-1 block text-sm font-medium text-foreground">Image *</label>
+                        <div className="flex items-center justify-between mb-1">
+                          <label className="block text-sm font-medium text-foreground">Image *</label>
+                          <span className="text-[11px] font-semibold text-primary bg-primary/10 px-2 py-0.5 rounded-md">
+                            Recommended: 1200 × 500 px (2.4:1)
+                          </span>
+                        </div>
                         <input
                           ref={editFileRef}
                           type="file"
@@ -425,10 +436,11 @@ export default function AdminBanners({ children }) {
                         <button
                           type="button"
                           onClick={() => editFileRef.current?.click()}
-                          className="flex w-full items-center justify-center gap-2 rounded-lg border-2 border-dashed border-border p-6 text-sm text-muted-foreground transition-colors hover:border-primary/50 hover:bg-muted/50"
+                          className="flex w-full flex-col items-center justify-center gap-1 rounded-lg border-2 border-dashed border-border p-5 text-sm text-muted-foreground transition-colors hover:border-primary/50 hover:bg-muted/50"
                         >
                           <Upload className="size-5" />
-                          Click to change image
+                          <span className="font-medium text-foreground">Click to change image</span>
+                          <span className="text-[11px] text-muted-foreground">Best Resolution: 1200 × 500 pixels (PNG, JPG, WEBP)</span>
                         </button>
                         {editPreview && (
                           <div className="mt-3 relative inline-block">

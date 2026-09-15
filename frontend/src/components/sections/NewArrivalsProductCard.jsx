@@ -104,19 +104,17 @@ export default function NewArrivalsProductCard({ product, index }) {
               </div>
             </div>
 
-            {!isAdminOrVendor && (
-              <div className="pt-0.5">
-                <button
-                  disabled={isOutOfStock}
-                  onClick={handleDirectAddToCart}
-                  title="Add to Cart"
-                  className="w-full flex items-center justify-center gap-1 rounded-full border border-blue-200/80 bg-white dark:bg-card text-[#0B3C73] dark:text-foreground py-1.5 px-2 text-[10px] sm:text-xs font-bold transition-all hover:bg-muted disabled:opacity-50 cursor-pointer shadow-2xs"
-                >
-                  <ShoppingCart className="size-3.5 shrink-0 text-[#0B3C73] dark:text-foreground" />
-                  <span>Add to Cart</span>
-                </button>
-              </div>
-            )}
+            <div className="pt-0.5">
+              <button
+                disabled={isOutOfStock || isAdminOrVendor}
+                onClick={handleDirectAddToCart}
+                title={isAdminOrVendor ? "Admins cannot purchase" : "Add to Cart"}
+                className={`w-full flex items-center justify-center gap-1 rounded-full border border-blue-200/80 bg-white dark:bg-card text-[#0B3C73] dark:text-foreground py-1.5 px-2 text-[10px] sm:text-xs font-bold transition-all hover:bg-muted ${isOutOfStock || isAdminOrVendor ? "opacity-50 cursor-not-allowed" : "cursor-pointer"} shadow-2xs`}
+              >
+                <ShoppingCart className="size-3.5 shrink-0 text-[#0B3C73] dark:text-foreground" />
+                <span>Add to Cart</span>
+              </button>
+            </div>
           </div>
         </div>
       </motion.div>

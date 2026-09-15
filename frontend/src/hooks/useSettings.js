@@ -49,7 +49,7 @@ const useSettings = () => {
   }, [logo, apiUrl]);
 
   return {
-    siteName: data?.siteName || "Aladiinn",
+    siteName: data?.siteName || "",
     logo,
     contactEmail: data?.contactEmail || "",
     contactPhone: data?.contactPhone || "",

@@ -18,11 +18,11 @@ async function fetchHomeData() {
       flashSaleRes,
       bannersRes
     ] = await Promise.all([
-      fetch(`${baseUrl}/categories`, { next: { revalidate: 300 } }),
-      fetch(`${baseUrl}/products/new-arrivals`, { next: { revalidate: 300 } }),
-      fetch(`${baseUrl}/products/best-sellers`, { next: { revalidate: 300 } }),
-      fetch(`${baseUrl}/products/flash-sale`, { next: { revalidate: 300 } }),
-      fetch(`${baseUrl}/banners`, { next: { revalidate: 300 } }),
+      fetch(`${baseUrl}/categories/with-counts`, { next: { revalidate: 60 } }),
+      fetch(`${baseUrl}/products/new-arrivals`, { next: { revalidate: 60 } }),
+      fetch(`${baseUrl}/products/best-sellers`, { next: { revalidate: 60 } }),
+      fetch(`${baseUrl}/products/flash-sale`, { next: { revalidate: 60 } }),
+      fetch(`${baseUrl}/banners`, { next: { revalidate: 60 } }),
     ]);
 
     return {

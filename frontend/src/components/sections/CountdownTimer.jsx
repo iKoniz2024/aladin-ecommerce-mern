@@ -21,12 +21,12 @@ function TimeUnit({ value, label, size = "md" }) {
   const isSm = size === "sm";
   return (
     <div className="flex flex-col items-center">
-      <div className={`flex items-center justify-center rounded-xl bg-gradient-to-br from-amber-500 via-amber-600 to-yellow-500 text-white shadow-md shadow-amber-500/25 ring-2 ring-amber-400/30 ${isSm ? "h-9 w-9 sm:h-10 sm:w-10" : "h-12 w-12 sm:h-14 sm:w-14"}`}>
+      <div className={`flex items-center justify-center rounded-none bg-gradient-to-br from-amber-500 via-amber-600 to-yellow-500 text-white shadow-md shadow-amber-500/25 ring-1 ring-amber-400/30 ${isSm ? "h-9 w-9 sm:h-10 sm:w-10" : "h-12 w-12 sm:h-14 sm:w-14"}`}>
         <span suppressHydrationWarning className={`font-extrabold tabular-nums ${isSm ? "text-sm sm:text-base" : "text-lg sm:text-xl"}`}>
           {String(value).padStart(2, "0")}
         </span>
       </div>
-      <span className={`mt-1.5 font-bold uppercase tracking-wider text-amber-600 dark:text-amber-400 ${isSm ? "text-[8px] sm:text-[9px]" : "text-[10px] sm:text-xs"}`}>
+      <span className={`mt-1 font-bold uppercase tracking-wider text-amber-600 dark:text-amber-400 ${isSm ? "text-[9px] sm:text-[10px]" : "text-[10px] sm:text-xs"}`}>
         {label}
       </span>
     </div>

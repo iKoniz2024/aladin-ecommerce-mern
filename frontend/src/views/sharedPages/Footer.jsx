@@ -38,11 +38,19 @@ export default function Footer() {
     youtubeUrl,
   } = useSettings();
 
+  const formatExternalUrl = (url) => {
+    if (!url || typeof url !== "string") return "";
+    const trimmed = url.trim();
+    if (!trimmed) return "";
+    if (/^https?:\/\//i.test(trimmed)) return trimmed;
+    return `https://${trimmed}`;
+  };
+
   const socialLinks = [
-    { icon: FaFacebookF, href: facebookUrl, label: "Facebook" },
-    { icon: FaInstagram, href: instagramUrl, label: "Instagram" },
-    { icon: FaTiktok, href: tiktokUrl, label: "TikTok" },
-    { icon: FaYoutube, href: youtubeUrl, label: "YouTube" },
+    { icon: FaFacebookF, href: formatExternalUrl(facebookUrl), label: "Facebook" },
+    { icon: FaInstagram, href: formatExternalUrl(instagramUrl), label: "Instagram" },
+    { icon: FaTiktok, href: formatExternalUrl(tiktokUrl), label: "TikTok" },
+    { icon: FaYoutube, href: formatExternalUrl(youtubeUrl), label: "YouTube" },
   ];
 
   return (
@@ -57,7 +65,7 @@ export default function Footer() {
               </Link>
             )}
             <p suppressHydrationWarning className="text-sm leading-relaxed text-blue-100/80">
-              {siteName} — providing elegance & lucrative outfit items sourced both locally & globally.
+              {siteName} — your trusted destination for quality products at great value. Discover everyday essentials, lifestyle products & more, delivered conveniently across Bangladesh.
             </p>
           </div>
 

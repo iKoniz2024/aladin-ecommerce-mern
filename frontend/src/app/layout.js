@@ -12,7 +12,7 @@ export async function generateMetadata() {
       default: "Aladiinn | Multi-Category E-Commerce Store",
       template: "%s | Aladiinn",
     },
-    description: "Discover quality products at Aladiinn.",
+    description: "Your trusted destination for quality products at great value. Discover everyday essentials, lifestyle products & more, delivered conveniently across Bangladesh.",
     metadataBase: new URL(process.env.NEXT_PUBLIC_SITE_URL || "https://aladiinnbd.com"),
     alternates: {
       canonical: "/",

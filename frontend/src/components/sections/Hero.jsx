@@ -4,10 +4,9 @@ import Link from "next/link";
 import { useMemo, useState, useEffect } from "react";
 import { Swiper, SwiperSlide } from "swiper/react";
 import { Autoplay, Pagination, Navigation } from "swiper/modules";
-import { ChevronLeft, ChevronRight, ChevronRight as ArrowRightIcon, Zap, Store, Layers, Sparkles } from "lucide-react";
+import { ChevronLeft, ChevronRight, ChevronRight as ArrowRightIcon, Zap, Store, Sparkles } from "lucide-react";
 import { useQuery } from "@tanstack/react-query";
 import { getBanners } from "@/services/banner.api";
-import { getCategoriesWithCounts } from "@/services/category.api";
 import { getFlashSaleProducts } from "@/services/product.api";
 import { getFeaturedVendor } from "@/services/vendor.api";
 import CountdownTimer from "./CountdownTimer";
@@ -45,12 +44,6 @@ export default function Hero({ initialData }) {
     initialData,
   });
 
-  // Categories query for Left Sidebar
-  const { data: categoryData } = useQuery({
-    queryKey: ["categories-with-counts"],
-    queryFn: getCategoriesWithCounts,
-  });
-
   // Flash Sale query for Right Promo Card
   const { data: flashData } = useQuery({
     queryKey: ["flash-sale"],
@@ -68,11 +61,6 @@ export default function Hero({ initialData }) {
     return data.filter((b) => b.isActive && (b.image || b.images?.length > 0));
   }, [bannerData]);
 
-  const categories = useMemo(() => {
-    const data = Array.isArray(categoryData) ? categoryData : categoryData?.categories || [];
-    return data.slice(0, 9);
-  }, [categoryData]);
-
   const flashProducts = useMemo(() => {
     return flashData?.products || [];
   }, [flashData]);
@@ -80,71 +68,21 @@ export default function Hero({ initialData }) {
   const featuredVendor = featuredVendorData?.vendor || null;
 
   return (
-    <section id="hero" className="relative overflow-hidden py-4 sm:py-6">
+    <section id="hero" className="relative overflow-hidden py-4 sm:py-5">
       <style>{heroStyles}</style>
 
       <div className="mx-auto max-w-7xl px-4 sm:px-6 lg:px-8">
-        <div className="grid grid-cols-1 gap-4 lg:grid-cols-12 lg:items-stretch">
-          
-          {/* ================= LEFT COLUMN: VERTICAL CATEGORY MENU (Desktop) ================= */}
-          <div className="hidden lg:col-span-3 lg:flex lg:flex-col justify-between overflow-hidden rounded-2xl border border-border/80 bg-card p-3 shadow-xs">
-            <div>
-              <div className="mb-3 flex items-center gap-2 border-b border-border/60 pb-2.5 px-2">
-                <Layers className="size-4 text-primary" />
-                <h3 className="text-sm font-bold text-foreground tracking-tight">Top Categories</h3>
-              </div>
+        {/* Parent container bounding Banner Slider & Right Promo Cards */}
+        <div className="grid grid-cols-1 gap-3.5 lg:grid-cols-12 lg:items-stretch lg:h-[375px] xl:h-[390px]">
 
-              <nav className="space-y-1">
-                {categories.length > 0 ? (
-                  categories.map((cat, idx) => (
-                    <Link
-                      key={cat._id || cat.slug || idx}
-                      href={`/products?category=${cat.slug}`}
-                      className="group flex items-center justify-between rounded-xl px-2.5 py-2 text-xs font-medium text-muted-foreground transition-all duration-200 hover:bg-accent hover:text-foreground"
-                    >
-                      <div className="flex items-center gap-2.5 truncate">
-                        {cat.image ? (
-                          <img
-                            src={cat.image}
-                            alt={cat.name}
-                            className="size-5 rounded-md object-cover"
-                          />
-                        ) : (
-                          <div className="size-5 rounded-md bg-muted flex items-center justify-center text-[10px] font-bold text-foreground">
-                            {cat.name.charAt(0)}
-                          </div>
-                        )}
-                        <span className="truncate">{cat.name}</span>
-                      </div>
-                      <ArrowRightIcon className="size-3.5 opacity-0 transition-all duration-200 group-hover:opacity-100 group-hover:translate-x-0.5" />
-                    </Link>
-                  ))
-                ) : (
-                  Array.from({ length: 7 }).map((_, i) => (
-                    <div key={i} className="h-8 rounded-lg bg-muted/60 animate-pulse" />
-                  ))
-                )}
-              </nav>
-            </div>
-
-            <div className="pt-2 border-t border-border/60 mt-2">
-              <Link
-                href="/products"
-                className="flex items-center justify-center gap-1 text-xs font-semibold text-primary hover:underline py-1"
-              >
-                All Categories <ArrowRightIcon className="size-3" />
-              </Link>
-            </div>
-          </div>
-
-          {/* ================= CENTER COLUMN: MAIN BANNER SLIDER ================= */}
-          <div className="lg:col-span-6 flex flex-col justify-center">
+          {/* ================= MAIN BANNER SLIDER (Takes 8 columns or 9 columns) ================= */}
+          <div className="lg:col-span-8 xl:col-span-9 flex flex-col justify-center h-full">
             {isBannerLoading ? (
-              <div className="flex h-64 sm:h-80 lg:h-full min-h-[340px] items-center justify-center rounded-2xl border border-border bg-muted/30">
+              <div className="flex size-full min-h-[260px] items-center justify-center rounded-none border border-border bg-muted/30">
                 <div className="size-8 animate-spin rounded-full border-4 border-primary border-t-transparent" />
               </div>
             ) : banners.length > 0 ? (
-              <div className="relative overflow-hidden rounded-2xl border border-border/60 shadow-sm h-full">
+              <div className="relative overflow-hidden rounded-none border border-border/60 shadow-sm size-full">
                 <Swiper
                   modules={[Autoplay, Pagination, Navigation]}
                   speed={800}
@@ -155,15 +93,15 @@ export default function Hero({ initialData }) {
                     nextEl: ".hero-next",
                   }}
                   loop={banners.length > 1}
-                  className="hero-swiper size-full min-h-[260px] sm:min-h-[320px] lg:min-h-[350px]"
+                  className="hero-swiper size-full"
                 >
                   {banners.map((banner) => (
                     <SwiperSlide key={banner._id}>
-                      <Link href="/products" className="block size-full relative">
+                      <Link href="/products" className="block size-full relative overflow-hidden bg-slate-950 flex items-center justify-center">
                         <img
                           src={banner.image || banner.images?.[0]}
                           alt={banner.title || "Promotional Banner"}
-                          className="size-full object-cover object-center min-h-[260px] sm:min-h-[320px] lg:min-h-[350px]"
+                          className="size-full object-cover object-center"
                         />
                       </Link>
                     </SwiperSlide>
@@ -185,81 +123,74 @@ export default function Hero({ initialData }) {
           </div>
 
           {/* ================= RIGHT COLUMN: PROMO CARDS (Featured Seller + Flash Deal) ================= */}
-          <div className="hidden lg:col-span-3 lg:flex lg:flex-col gap-3 justify-between">
-            
+          <div className="hidden lg:col-span-4 xl:col-span-3 lg:flex lg:flex-col gap-3.5 h-full overflow-hidden">
+
             {/* Card 1: Featured Store / Seller Promotion */}
-            <div className="flex-1 rounded-2xl border border-border/80 bg-gradient-to-br from-card to-accent/20 p-4 shadow-xs flex flex-col justify-between">
-              <div>
-                <div className="flex items-center justify-between mb-2">
-                  <span className="inline-flex items-center gap-1 rounded-full bg-primary/10 px-2.5 py-0.5 text-[11px] font-bold text-primary">
-                    <Sparkles className="size-3" /> Featured Store
-                  </span>
-                  <Store className="size-4 text-muted-foreground" />
-                </div>
-                
-                {featuredVendor ? (
-                  <div className="mt-2 flex items-center gap-3">
-                    {featuredVendor.vendorInfo?.shopLogo ? (
-                      <img src={featuredVendor.vendorInfo.shopLogo} alt={featuredVendor.vendorInfo.shopName} className="size-12 rounded-lg object-cover border border-border/50" />
-                    ) : (
-                      <div className="size-12 rounded-lg bg-muted flex items-center justify-center text-xs font-bold text-foreground">
-                        {featuredVendor.vendorInfo?.shopName?.charAt(0) || "S"}
-                      </div>
-                    )}
-                    <div className="truncate flex-1">
-                      <h4 className="text-sm font-bold text-foreground truncate">{featuredVendor.vendorInfo?.shopName || "Top Rated Seller"}</h4>
-                      <p className="text-[10px] text-muted-foreground mt-0.5 truncate">
-                        {featuredVendor.email}
-                      </p>
-                    </div>
-                  </div>
-                ) : (
-                  <>
-                    <h4 className="text-sm font-bold text-foreground mt-2">Top Rated Seller</h4>
-                    <p className="mt-1 text-xs text-muted-foreground line-clamp-2">
-                      Discover verified multi-vendor stores offering exclusive discounts & original products.
-                    </p>
-                  </>
-                )}
+            <div className="rounded-none border border-border/80 bg-gradient-to-br from-card to-accent/20 p-3.5 sm:p-4 shadow-xs flex flex-col justify-start gap-2.5 shrink-0">
+              <div className="flex items-center justify-between">
+                <span className="inline-flex items-center gap-1 rounded-sm bg-primary/10 px-2.5 py-1 text-xs font-bold text-primary">
+                  <Sparkles className="size-3.5" /> Featured Store
+                </span>
+                <Store className="size-4 text-muted-foreground" />
               </div>
+
+              {featuredVendor ? (
+                <div className="flex items-center gap-3">
+                  {featuredVendor.vendorInfo?.shopLogo ? (
+                    <img src={featuredVendor.vendorInfo.shopLogo} alt={featuredVendor.vendorInfo.shopName} className="size-10 sm:size-11 rounded-none object-cover border border-border/50 shrink-0" />
+                  ) : (
+                    <div className="size-10 sm:size-11 rounded-none bg-muted flex items-center justify-center text-sm font-bold text-foreground shrink-0">
+                      {featuredVendor.vendorInfo?.shopName?.charAt(0) || ""}
+                    </div>
+                  )}
+                  <div className="truncate flex-1 min-w-0">
+                    <h4 className="text-sm font-bold text-foreground truncate">{featuredVendor.vendorInfo?.shopName || ""}</h4>
+                    <p className="text-xs text-muted-foreground truncate mt-0.5">
+                      {featuredVendor.email}
+                    </p>
+                  </div>
+                </div>
+              ) : null}
+
               <Link
                 href={featuredVendor ? `/products?shopName=${encodeURIComponent(featuredVendor.vendorInfo?.shopName || "")}` : "/products"}
-                className="mt-3 block w-full rounded-xl bg-foreground px-3 py-2 text-center text-xs font-semibold text-background transition-all hover:opacity-90 shadow-xs"
+                className="block w-full rounded-none bg-foreground py-2 sm:py-2.5 text-center text-xs sm:text-sm font-bold text-background transition-all hover:opacity-90 shadow-xs"
               >
-                {featuredVendor ? "Visit Store" : "Explore Stores"}
+                Visit Store
               </Link>
             </div>
 
             {/* Card 2: Daily Flash Sale Highlight */}
-            <div className="flex-1 rounded-2xl border border-border/80 bg-gradient-to-br from-card to-rose-500/5 p-4 shadow-xs flex flex-col justify-between">
-              <div>
-                <div className="flex items-center justify-between mb-2">
-                  <span className="inline-flex items-center gap-1 rounded-full bg-rose-500/10 px-2.5 py-0.5 text-[11px] font-bold text-rose-600 dark:text-rose-400">
-                    <Zap className="size-3 fill-rose-500" /> Flash Sale
-                  </span>
-                  <span className="text-[10px] font-bold uppercase text-muted-foreground">Limited</span>
-                </div>
-                
-                {!isMounted ? (
-                  <p className="text-xs text-muted-foreground">Don't miss today's special deal discounts!</p>
-                ) : flashProducts.length > 0 ? (
+            <div className="rounded-none border border-border/80 bg-gradient-to-br from-card to-accent/20 p-3.5 sm:p-4 shadow-xs flex flex-col justify-start gap-2.5 shrink-0">
+
+              {/* 1. Header Badge */}
+              <div className="flex items-center justify-between shrink-0">
+                <span className="inline-flex items-center gap-1 rounded-sm bg-rose-500/10 px-2.5 py-1 text-xs font-bold text-rose-600 dark:text-rose-400">
+                  <Zap className="size-3.5 fill-rose-500" /> Flash Sale
+                </span>
+                <span className="text-xs font-bold uppercase tracking-wider text-muted-foreground">Limited</span>
+              </div>
+
+              {/* 2. Product Row */}
+              {flashProducts.length > 0 ? (
+                <div className="h-13 sm:h-14 overflow-hidden shrink-0">
                   <Swiper
                     modules={[Autoplay]}
                     speed={800}
                     autoplay={{ delay: 3000, disableOnInteraction: false }}
                     loop={flashProducts.length > 1}
-                    className="w-full"
+                    className="w-full h-full"
                   >
                     {flashProducts.map((fp) => (
-                      <SwiperSlide key={fp._id || fp.id}>
-                        <Link href={`/product/${fp._id}`} className="group flex gap-4 items-center my-2">
+                      <SwiperSlide key={fp._id || fp.id} className="h-full flex items-center">
+                        <Link href={`/product/${fp._id}`} className="group flex gap-3 items-center w-full">
                           <img
                             src={fp.thumbnail || fp.images?.[0] || fp.image}
                             alt={fp.title || fp.name}
-                            className="size-16 sm:size-20 rounded-xl object-cover border border-border/50 shrink-0"
+                            className="size-11 sm:size-12 rounded-none object-cover border border-border/50 shrink-0"
                           />
-                          <div className="truncate flex-1">
-                            <h5 className="text-sm font-bold text-foreground truncate mb-1 group-hover:text-rose-600 transition-colors">{fp.title || fp.name}</h5>
+                          <div className="truncate flex-1 min-w-0">
+                            <h5 className="text-xs sm:text-sm font-bold text-foreground truncate group-hover:text-rose-600 transition-colors">{fp.title || fp.name}</h5>
                             <div className="flex items-center gap-2 mt-0.5">
                               <span className="text-sm sm:text-base font-extrabold text-rose-600">৳{fp.discountPercentage > 0 ? (fp.price * (1 - fp.discountPercentage / 100)).toFixed(0) : fp.price}</span>
                               {fp.discountPercentage > 0 && (
@@ -271,22 +202,21 @@ export default function Hero({ initialData }) {
                       </SwiperSlide>
                     ))}
                   </Swiper>
-                ) : (
-                  <p className="text-xs text-muted-foreground">Don't miss today's special deal discounts!</p>
-                )}
+                </div>
+              ) : null}
+
+              {/* 3. Countdown Timer */}
+              <div className="flex justify-center shrink-0">
+                <CountdownTimer size="sm" />
               </div>
 
-              <div className="mt-3">
-                <div className="mb-3 flex justify-center">
-                  <CountdownTimer size="sm" />
-                </div>
-                <Link
-                  href="/products"
-                  className="block w-full rounded-xl bg-rose-600 px-3 py-2 text-center text-xs font-semibold text-white transition-all hover:bg-rose-700 shadow-xs"
-                >
-                  Grab Deal Now
-                </Link>
-              </div>
+              {/* 4. Order Now Button */}
+              <Link
+                href="/products"
+                className="block w-full rounded-none bg-rose-600 py-2 sm:py-2.5 text-center text-xs sm:text-sm font-bold text-white transition-all hover:bg-rose-700 shadow-xs shrink-0"
+              >
+                Order Now
+              </Link>
             </div>
 
           </div>

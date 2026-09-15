@@ -73,7 +73,7 @@ export default function About({ children }) {
             About {siteName}
           </h1>
           <p className="mx-auto mt-3 max-w-2xl text-base text-muted-foreground sm:text-lg">
-            Providing elegance & lucrative outfit items sourced both locally & globally with uncompromised quality.
+            Your trusted destination for quality products at great value. Discover everyday essentials, lifestyle products & more, delivered conveniently across Bangladesh.
           </p>
           <div className="mt-4 inline-block text-xs font-medium text-muted-foreground/80">
             Last updated: August 2026
@@ -88,10 +88,51 @@ export default function About({ children }) {
             Who We Are
           </h2>
           <p className="mt-4 text-sm sm:text-base text-muted-foreground leading-relaxed">
-            Welcome to <strong className="text-foreground">{siteName}</strong> — your premier destination for premium fashion and quality apparel at competitive prices. We started with a simple mission: to make modern, high-quality fashion accessible, enjoyable, and effortless for everyone.
+            Welcome to <strong className="text-foreground">{siteName}</strong> — Your One-Stop Shopping Destination!
           </p>
           <p className="mt-3 text-sm sm:text-base text-muted-foreground leading-relaxed">
-            Founded with a commitment to craftsmanship and authenticity, we have grown into a trusted e-commerce platform serving thousands of satisfied customers across the country.
+            At <strong className="text-foreground">{siteName}</strong>, we believe shopping should be simple, convenient, and enjoyable. Our goal is to bring useful, trendy, and value-for-money products together in one place—so you can easily find what you need for yourself, your family, and your home.
+          </p>
+          <p className="mt-3 text-sm sm:text-base text-muted-foreground leading-relaxed">
+            From Home & Living, Kitchen & Dining, Baby & Kids, Fashion, Beauty & Personal Care, Medical Care, Electronics & Gadgets & Others to everyday essentials and exciting deals, we are continuously expanding our collection to meet the diverse needs of our customers.
+          </p>
+          <p className="mt-3 text-sm sm:text-base text-muted-foreground leading-relaxed">
+            We focus on carefully selected products, competitive pricing, convenient online shopping, responsive customer support, and reliable delivery across Bangladesh. We want every customer to shop with confidence and have a smooth experience from browsing to receiving an order.
+          </p>
+        </div>
+
+        {/* Mission & Promise Section */}
+        <div className="grid gap-6 md:grid-cols-2">
+          <div className="rounded-2xl border border-border bg-card p-6 sm:p-8 shadow-xs flex flex-col justify-between">
+            <div>
+              <h2 className="text-xl font-bold tracking-tight text-foreground border-b border-border pb-3">
+                Our Mission
+              </h2>
+              <p className="mt-4 text-sm sm:text-base text-muted-foreground leading-relaxed">
+                Our mission is to build <strong className="text-foreground">{siteName}</strong> into a trusted online shopping destination in Bangladesh by offering practical products at reasonable prices while continuously improving product selection, service quality, and customer experience.
+              </p>
+            </div>
+          </div>
+
+          <div className="rounded-2xl border border-border bg-card p-6 sm:p-8 shadow-xs flex flex-col justify-between">
+            <div>
+              <h2 className="text-xl font-bold tracking-tight text-foreground border-b border-border pb-3">
+                Our Promise
+              </h2>
+              <p className="mt-4 text-sm sm:text-base text-muted-foreground leading-relaxed">
+                Customer satisfaction is at the heart of what we do. We value your trust and aim to build long-term relationships through honest product information, dependable service, and continuous support.
+              </p>
+            </div>
+          </div>
+        </div>
+
+        {/* Tagline Banner */}
+        <div className="rounded-2xl border border-primary/20 bg-primary/5 p-6 text-center shadow-xs">
+          <p className="text-lg sm:text-xl font-bold tracking-tight text-foreground">
+            Discover. Choose. Shop.
+          </p>
+          <p className="mt-1 text-sm font-semibold text-primary">
+            {siteName} — Your One-Stop Shopping Destination!
           </p>
         </div>
 
@@ -154,11 +195,11 @@ export default function About({ children }) {
           </h2>
           <div className="mt-4 grid gap-3 sm:grid-cols-2">
             {[
-              "Wide range of carefully curated fashion products",
+              "Wide range of carefully curated practical products",
               "Competitive prices with exclusive offers & deals",
               "Fast and reliable delivery across Bangladesh",
               "Multiple secure payment methods including COD",
-              "Transparent and easy 7-day return policy",
+              "Transparent and easy return policy",
               "Dedicated customer support team available 24/7",
             ].map((reason, idx) => (
               <div key={idx} className="flex items-center gap-3">

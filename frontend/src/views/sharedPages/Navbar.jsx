@@ -3,7 +3,7 @@
 import Link from 'next/link';
 import { useRouter, usePathname, useSearchParams } from 'next/navigation';
 import { useState, useEffect } from "react";
-import { Search, ShoppingCart, Sun, Moon, Menu, X, Phone, Package, House, Store, TrendingUp, Zap, Sparkles } from "lucide-react";
+import { Search, ShoppingCart, Sun, Moon, Menu, X, Phone, Package, House, Store, TrendingUp, Zap, Sparkles, LayoutGrid, ChevronDown } from "lucide-react";
 import { useQuery } from "@tanstack/react-query";
 import useCart from "@/hooks/useCart";
 import useTheme from "@/hooks/useTheme";
@@ -53,19 +53,19 @@ const Navbar = () => {
     }, [pathname]);
 
     return (
-        <header className="sticky top-0 z-100 bg-[#0B3C73] text-white border-b border-[#082d56] shadow-md">
+        <header className="sticky top-0 z-100 bg-[#0B3C73] text-white border-b border-[#082d56]">
             {/* Top Header (Lighter Blue - #0B3C73) */}
             <div className="bg-[#0B3C73]">
                 <div className="mx-auto flex h-16 sm:h-20 max-w-7xl items-center justify-between px-4 gap-4">
                     {/* Logo */}
                     <Link href="/" className="flex items-center shrink-0">
-                        {mounted && logo ? (
-                            <img src={logo} alt={siteName || "Aladiinn"} className="h-9 sm:h-12 w-auto object-contain" />
-                        ) : (
+                        {logo ? (
+                            <img src={logo} alt={siteName || "Logo"} className="h-9 sm:h-12 w-auto object-contain" />
+                        ) : siteName ? (
                             <span suppressHydrationWarning className="text-xl sm:text-2xl font-black text-white tracking-tight">
-                                {siteName || "Aladiinn"}<span className="text-[#FFA800]">.</span>
+                                {siteName}
                             </span>
-                        )}
+                        ) : null}
                     </Link>
 
                     {/* Clean Search Bar */}
@@ -198,6 +198,49 @@ const Navbar = () => {
                                 <span>Home</span>
                             </Link>
 
+                            {/* Categories Mega Dropdown */}
+                            <div className="relative group/cat">
+                                <button className="flex items-center gap-2 rounded-xl px-4 py-2 text-xs sm:text-sm font-bold text-blue-100/80 hover:bg-white/10 hover:text-white transition-all cursor-pointer">
+                                    <LayoutGrid className="size-4 text-[#FFA800]" />
+                                    <span>Categories</span>
+                                    <ChevronDown className="size-3.5 text-blue-100/70 group-hover/cat:rotate-180 transition-transform duration-200" />
+                                </button>
+
+                                {/* Mega Dropdown Menu */}
+                                <div className="invisible opacity-0 group-hover/cat:visible group-hover/cat:opacity-100 transition-all duration-200 absolute left-0 top-full z-100 mt-1 w-[820px] max-w-[90vw] rounded-2xl border border-white/20 bg-[#0B3C73] p-6 shadow-2xl text-white">
+                                    <div className="grid grid-cols-2 sm:grid-cols-3 lg:grid-cols-6 gap-6 max-h-[420px] overflow-y-auto pr-1">
+                                        {categories && categories.length > 0 ? (
+                                            categories.map((cat, idx) => (
+                                                <div key={cat._id || `${cat.slug || 'cat'}-${idx}`} className="space-y-2">
+                                                    <Link
+                                                        href={`/products?category=${cat.slug}`}
+                                                        className="block text-xs font-extrabold text-[#FFA800] hover:underline truncate"
+                                                    >
+                                                        {cat.name}
+                                                    </Link>
+                                                    {cat.children && cat.children.length > 0 && (
+                                                        <ul className="space-y-1 text-[11px] text-blue-100/80">
+                                                            {cat.children.map((child, cIdx) => (
+                                                                <li key={child._id || `${child.slug || 'child'}-${cIdx}`}>
+                                                                    <Link
+                                                                        href={`/products?category=${child.slug}`}
+                                                                        className="hover:text-white hover:underline block truncate"
+                                                                    >
+                                                                        {child.name}
+                                                                    </Link>
+                                                                </li>
+                                                            ))}
+                                                        </ul>
+                                                    )}
+                                                </div>
+                                            ))
+                                        ) : (
+                                            <p className="text-xs text-blue-100/70 col-span-full">Loading categories...</p>
+                                        )}
+                                    </div>
+                                </div>
+                            </div>
+
                             <Link href="/products" className={`flex items-center gap-2 rounded-xl px-4 py-2 text-xs sm:text-sm font-bold transition-all ${pathname === "/products" ? "bg-white/15 text-[#FFA800] border border-white/10 shadow-2xs" : "text-blue-100/80 hover:bg-white/10 hover:text-white"}`}>
                                 <Store className="size-4 text-[#FFA800]" />
                                 <span>Shop Products</span>
@@ -243,11 +286,11 @@ const Navbar = () => {
                     <div className="absolute inset-y-0 left-0 w-80 max-w-[85vw] bg-[#0B3C73] text-white shadow-2xl overflow-y-auto border-r border-white/10">
                         <div className="flex items-center justify-between border-b border-white/15 px-5 py-4">
                             <Link href="/" onClick={() => setMobileOpen(false)}>
-                                {mounted && logo ? (
-                                    <img src={logo} alt={siteName} className="h-9 w-auto object-contain" />
-                                ) : (
-                                    <span suppressHydrationWarning className="text-lg font-black text-white">{siteName || "Aladiinn"}</span>
-                                )}
+                                {logo ? (
+                                    <img src={logo} alt={siteName || "Logo"} className="h-9 w-auto object-contain" />
+                                ) : siteName ? (
+                                    <span suppressHydrationWarning className="text-lg font-black text-white">{siteName}</span>
+                                ) : null}
                             </Link>
                             <button
                                 onClick={() => setMobileOpen(false)}
