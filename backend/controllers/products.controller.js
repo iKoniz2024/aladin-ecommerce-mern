@@ -196,42 +196,45 @@ const getAllProducts = async (req, res) => {
         const brand = req.query.brand || "";
         const sort = req.query.sort || "";
 
-        const query = {};
+        const andConditions = [];
         const escapeRegex = (str) => str.replace(/[-[\]{}()*+?.,\\^$|#\s]/g, "\\$&");
 
         if (search && search.trim()) {
             const cleanSearch = escapeRegex(search.trim());
             const searchRegex = { $regex: cleanSearch, $options: "i" };
-            query.$or = [
-                { title: searchRegex },
-                { category: searchRegex },
-                { brand: searchRegex },
-                { description: searchRegex },
-                { tags: { $elemMatch: searchRegex } },
-                { sku: searchRegex },
-            ];
+            andConditions.push({
+                $or: [
+                    { title: searchRegex },
+                    { category: searchRegex },
+                    { brand: searchRegex },
+                    { description: searchRegex },
+                    { tags: searchRegex },
+                    { sku: searchRegex },
+                ]
+            });
         }
 
         if (category && category.trim()) {
             const categoriesArray = category.split(",").map(c => c.trim()).filter(Boolean);
             if (categoriesArray.length > 0) {
                 const categoryConditions = categoriesArray.map(c => ({
-                    category: { $regex: escapeRegex(c), $options: "i" }
+                    category: { $regex: `^${escapeRegex(c)}$`, $options: "i" }
                 }));
-                query.$and = query.$and || [];
-                query.$and.push({ $or: categoryConditions });
+                andConditions.push({ $or: categoryConditions });
             }
         }
 
         if (brand && brand.trim()) {
-            query.brand = { $regex: escapeRegex(brand.trim()), $options: "i" };
+            andConditions.push({ brand: { $regex: `^${escapeRegex(brand.trim())}$`, $options: "i" } });
         }
 
         if (req.user && req.user.role === "vendor") {
-            query.vendorId = req.user.id.toString();
+            andConditions.push({ vendorId: req.user.id.toString() });
         } else if (req.query.vendorId && req.query.vendorId.trim()) {
-            query.vendorId = req.query.vendorId.trim();
+            andConditions.push({ vendorId: req.query.vendorId.trim() });
         }
+
+        const query = andConditions.length > 0 ? { $and: andConditions } : {};
 
         let sortOption = { _id: -1 };
 

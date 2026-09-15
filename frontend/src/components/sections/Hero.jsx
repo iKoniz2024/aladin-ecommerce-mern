@@ -73,12 +73,12 @@ export default function Hero({ initialData }) {
 
       <div className="mx-auto max-w-7xl px-4 sm:px-6 lg:px-8">
         {/* Parent container bounding Banner Slider & Right Promo Cards */}
-        <div className="grid grid-cols-1 gap-3.5 lg:grid-cols-12 lg:items-stretch lg:h-[375px] xl:h-[390px]">
+        <div className="grid grid-cols-1 gap-3.5 lg:grid-cols-12 lg:items-stretch">
 
           {/* ================= MAIN BANNER SLIDER (Takes 8 columns or 9 columns) ================= */}
-          <div className="lg:col-span-8 xl:col-span-9 flex flex-col justify-center h-full">
+          <div className="lg:col-span-8 xl:col-span-9 flex flex-col justify-center aspect-[12/5] w-full">
             {isBannerLoading ? (
-              <div className="flex size-full min-h-[260px] items-center justify-center rounded-none border border-border bg-muted/30">
+              <div className="flex size-full items-center justify-center rounded-none border border-border bg-muted/30">
                 <div className="size-8 animate-spin rounded-full border-4 border-primary border-t-transparent" />
               </div>
             ) : banners.length > 0 ? (
@@ -123,12 +123,12 @@ export default function Hero({ initialData }) {
           </div>
 
           {/* ================= RIGHT COLUMN: PROMO CARDS (Featured Seller + Flash Deal) ================= */}
-          <div className="hidden lg:col-span-4 xl:col-span-3 lg:flex lg:flex-col gap-3.5 h-full overflow-hidden">
+          <div className="hidden lg:col-span-4 xl:col-span-3 lg:flex lg:flex-col justify-between gap-3.5 h-full overflow-hidden">
 
             {/* Card 1: Featured Store / Seller Promotion */}
-            <div className="rounded-none border border-border/80 bg-gradient-to-br from-card to-accent/20 p-3.5 sm:p-4 shadow-xs flex flex-col justify-start gap-2.5 shrink-0">
+            <div className="rounded-2xl border border-border/80 bg-gradient-to-br from-card to-accent/20 p-3.5 sm:p-4 shadow-xs flex flex-col justify-start gap-2.5 shrink-0">
               <div className="flex items-center justify-between">
-                <span className="inline-flex items-center gap-1 rounded-sm bg-primary/10 px-2.5 py-1 text-xs font-bold text-primary">
+                <span className="inline-flex items-center gap-1 rounded-full bg-primary/10 px-2.5 py-1 text-xs font-bold text-primary">
                   <Sparkles className="size-3.5" /> Featured Store
                 </span>
                 <Store className="size-4 text-muted-foreground" />
@@ -137,9 +137,9 @@ export default function Hero({ initialData }) {
               {featuredVendor ? (
                 <div className="flex items-center gap-3">
                   {featuredVendor.vendorInfo?.shopLogo ? (
-                    <img src={featuredVendor.vendorInfo.shopLogo} alt={featuredVendor.vendorInfo.shopName} className="size-10 sm:size-11 rounded-none object-cover border border-border/50 shrink-0" />
+                    <img src={featuredVendor.vendorInfo.shopLogo} alt={featuredVendor.vendorInfo.shopName} className="size-10 sm:size-11 rounded-xl object-cover border border-border/50 shrink-0" />
                   ) : (
-                    <div className="size-10 sm:size-11 rounded-none bg-muted flex items-center justify-center text-sm font-bold text-foreground shrink-0">
+                    <div className="size-10 sm:size-11 rounded-xl bg-muted flex items-center justify-center text-sm font-bold text-foreground shrink-0">
                       {featuredVendor.vendorInfo?.shopName?.charAt(0) || ""}
                     </div>
                   )}
@@ -154,18 +154,18 @@ export default function Hero({ initialData }) {
 
               <Link
                 href={featuredVendor ? `/products?shopName=${encodeURIComponent(featuredVendor.vendorInfo?.shopName || "")}` : "/products"}
-                className="block w-full rounded-none bg-foreground py-2 sm:py-2.5 text-center text-xs sm:text-sm font-bold text-background transition-all hover:opacity-90 shadow-xs"
+                className="block w-full rounded-full bg-foreground py-2 sm:py-2.5 text-center text-xs sm:text-sm font-bold text-background transition-all hover:opacity-90 shadow-xs"
               >
                 Visit Store
               </Link>
             </div>
 
             {/* Card 2: Daily Flash Sale Highlight */}
-            <div className="rounded-none border border-border/80 bg-gradient-to-br from-card to-accent/20 p-3.5 sm:p-4 shadow-xs flex flex-col justify-start gap-2.5 shrink-0">
+            <div className="rounded-2xl border border-border/80 bg-gradient-to-br from-card to-accent/20 p-3.5 sm:p-4 shadow-xs flex flex-col justify-start gap-2.5 shrink-0">
 
               {/* 1. Header Badge */}
               <div className="flex items-center justify-between shrink-0">
-                <span className="inline-flex items-center gap-1 rounded-sm bg-rose-500/10 px-2.5 py-1 text-xs font-bold text-rose-600 dark:text-rose-400">
+                <span className="inline-flex items-center gap-1 rounded-full bg-rose-500/10 px-2.5 py-1 text-xs font-bold text-rose-600 dark:text-rose-400">
                   <Zap className="size-3.5 fill-rose-500" /> Flash Sale
                 </span>
                 <span className="text-xs font-bold uppercase tracking-wider text-muted-foreground">Limited</span>
@@ -187,7 +187,7 @@ export default function Hero({ initialData }) {
                           <img
                             src={fp.thumbnail || fp.images?.[0] || fp.image}
                             alt={fp.title || fp.name}
-                            className="size-11 sm:size-12 rounded-none object-cover border border-border/50 shrink-0"
+                            className="size-11 sm:size-12 rounded-lg object-cover border border-border/50 shrink-0"
                           />
                           <div className="truncate flex-1 min-w-0">
                             <h5 className="text-xs sm:text-sm font-bold text-foreground truncate group-hover:text-rose-600 transition-colors">{fp.title || fp.name}</h5>
@@ -213,7 +213,7 @@ export default function Hero({ initialData }) {
               {/* 4. Order Now Button */}
               <Link
                 href="/products"
-                className="block w-full rounded-none bg-rose-600 py-2 sm:py-2.5 text-center text-xs sm:text-sm font-bold text-white transition-all hover:bg-rose-700 shadow-xs shrink-0"
+                className="block w-full rounded-full bg-rose-600 py-2 sm:py-2.5 text-center text-xs sm:text-sm font-bold text-white transition-all hover:bg-rose-700 shadow-xs shrink-0"
               >
                 Order Now
               </Link>

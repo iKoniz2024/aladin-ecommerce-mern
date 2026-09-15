@@ -61,6 +61,7 @@ export default function ProductDetails({ children }) {
   const [selectedImage, setSelectedImage] = useState(0);
   const [selectedSize, setSelectedSize] = useState(null);
   const [selectedColor, setSelectedColor] = useState(null);
+  const [selectedDynamicAttrs, setSelectedDynamicAttrs] = useState({});
   const [activeDisplayImage, setActiveDisplayImage] = useState(null);
   const [quantity, setQuantity] = useState(1);
   const [activeTab, setActiveTab] = useState("description");
@@ -89,7 +90,7 @@ export default function ProductDetails({ children }) {
     }
   }, [product]);
 
-  // Sync color & display image when product loads
+  // Sync color & dynamic attributes when product loads
   const [prevProductId, setPrevProductId] = useState(null);
   if (product && product._id !== prevProductId) {
     setPrevProductId(product._id);
@@ -101,6 +102,24 @@ export default function ProductDetails({ children }) {
     } else {
       setSelectedColor(null);
       setActiveDisplayImage(null);
+    }
+
+    // Auto-initialize first option for selectable dynamic attributes
+    if (product.attributes && typeof product.attributes === "object") {
+      const initialAttrs = {};
+      Object.entries(product.attributes).forEach(([k, v]) => {
+        if (k === "sizes" || k === "size" || k === "colors" || k === "color") return;
+        let options = [];
+        if (Array.isArray(v)) {
+          options = v.filter(Boolean);
+        } else if (typeof v === "string" && v.includes(",")) {
+          options = v.split(",").map(s => s.trim()).filter(Boolean);
+        }
+        if (options.length > 0) {
+          initialAttrs[k] = options[0];
+        }
+      });
+      setSelectedDynamicAttrs(initialAttrs);
     }
   }
 
@@ -136,10 +155,21 @@ export default function ProductDetails({ children }) {
       toast.error("Please select a color");
       return;
     }
+
+    const dynamicSpecs = Object.entries(selectedDynamicAttrs)
+      .map(([k, v]) => {
+        const label = k.replace(/_/g, " ").replace(/\b\w/g, (c) => c.toUpperCase());
+        return `${label}: ${v}`;
+      })
+      .filter(Boolean)
+      .join(", ");
+
+    const finalSizeVariant = [selectedSize, dynamicSpecs].filter(Boolean).join(" | ");
+
     await addToCart(
       product,
       quantity,
-      selectedSize || "",
+      finalSizeVariant || "",
       selectedColor?.name || "",
       selectedColor?.image || ""
     );
@@ -318,6 +348,57 @@ export default function ProductDetails({ children }) {
                 </div>
               </div>
             )}
+
+            {/* Dynamic Selectable Attribute Options (e.g. Age Range, Shoe Size, RAM, Storage, etc.) */}
+            {product?.attributes && typeof product.attributes === "object" && (() => {
+              const selectableEntries = Object.entries(product.attributes).filter(([key, val]) => {
+                if (key === "sizes" || key === "size" || key === "colors" || key === "color") return false;
+                if (Array.isArray(val) && val.length > 0) return true;
+                if (typeof val === "string" && val.includes(",")) return true;
+                return false;
+              });
+
+              if (selectableEntries.length === 0) return null;
+
+              return selectableEntries.map(([key, val]) => {
+                const options = Array.isArray(val)
+                  ? val
+                  : String(val).split(",").map((s) => s.trim()).filter(Boolean);
+                if (options.length === 0) return null;
+
+                const label = key.replace(/_/g, " ").replace(/\b\w/g, (c) => c.toUpperCase());
+                const selectedVal = selectedDynamicAttrs[key] || options[0];
+
+                return (
+                  <div key={key} className="space-y-2 border-b border-border pb-4">
+                    <div className="flex items-center justify-between">
+                      <span className="text-sm font-bold text-foreground">
+                        Select {label} :{" "}
+                        <span className="font-normal text-muted-foreground">{selectedVal || `Select ${label}`}</span>
+                      </span>
+                    </div>
+                    <div className="flex flex-wrap gap-2">
+                      {options.map((opt) => {
+                        const isSelected = selectedVal === opt;
+                        return (
+                          <button
+                            key={opt}
+                            type="button"
+                            onClick={() => setSelectedDynamicAttrs((prev) => ({ ...prev, [key]: opt }))}
+                            className={`rounded-lg border px-3.5 py-1.5 text-xs sm:text-sm font-bold transition-all ${isSelected
+                              ? "border-foreground bg-foreground text-background shadow-xs ring-1 ring-foreground"
+                              : "border-border bg-background text-foreground hover:border-foreground/50"
+                              }`}
+                          >
+                            {opt}
+                          </button>
+                        );
+                      })}
+                    </div>
+                  </div>
+                );
+              });
+            })()}
 
             {/* Quantity and Order */}
             <div className="space-y-2">

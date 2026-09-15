@@ -51,19 +51,18 @@ export default function NewArrivalsProductCard({ product, index }) {
         custom={index}
         initial="hidden"
         whileInView="visible"
-        viewport={{ once: true, margin: "-40px" }}
+        viewport={{ once: true }}
         variants={{
-          hidden: { opacity: 0, y: 20 },
+          hidden: { opacity: 0 },
           visible: (i) => ({
             opacity: 1,
-            y: 0,
-            transition: { delay: i * 0.05, duration: 0.4, ease: [0.22, 1, 0.36, 1] },
+            transition: { delay: i * 0.05, duration: 0.3 },
           }),
         }}
-        className="shrink-0 w-[270px] max-w-full aspect-square h-[270px]"
+        className="shrink-0 w-[240px] sm:w-[265px]"
       >
-        <div className="group overflow-hidden rounded-xl border border-border bg-card flex flex-col h-[270px] w-full aspect-square shadow-xs hover:shadow-md transition-all">
-          <Link href={`/product/${product._id}`} className="relative h-[64%] w-full overflow-hidden bg-muted block shrink-0">
+        <div className="group flex flex-col h-full w-full overflow-hidden rounded-xl border border-border bg-card shadow-xs transition-all duration-300 hover:shadow-md">
+          <Link href={`/product/${product._id}`} className="relative h-[165px] sm:h-[180px] w-full overflow-hidden bg-muted block shrink-0">
             <img
               src={product.thumbnail || product.images?.[0] || null}
               alt={product.title}
@@ -84,7 +83,7 @@ export default function NewArrivalsProductCard({ product, index }) {
             )}
           </Link>
 
-          <div className="flex h-[36%] flex-col justify-between p-2.5 bg-card shrink-0">
+          <div className="flex flex-1 flex-col justify-between p-3 bg-card gap-2.5">
             <div className="space-y-0.5">
               <Link href={`/product/${product._id}`} className="block">
                 <h3 className="line-clamp-1 text-xs sm:text-sm font-semibold text-foreground group-hover:text-primary transition-colors">

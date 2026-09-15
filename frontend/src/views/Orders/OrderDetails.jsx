@@ -416,6 +416,9 @@ export default function OrderDetails({ children }) {
                     {order.shippingAddress?.fullName}
                   </p>
                   <p>{order.shippingAddress?.phone}</p>
+                  {(order.shippingAddress?.email || order.userEmail || order.email) && (
+                    <p>{order.shippingAddress?.email || order.userEmail || order.email}</p>
+                  )}
                   <p>{order.shippingAddress?.address}</p>
                   {order.shippingAddress?.city && (
                     <p>{order.shippingAddress.city}</p>

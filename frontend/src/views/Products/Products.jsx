@@ -53,8 +53,12 @@ export default function Products({ initialCategories, initialProducts }) {
 
   const updateCategory = (slug) => {
     const next = new URLSearchParams(searchParams.toString());
-    if (slug) next.set("category", slug);
-    else next.delete("category");
+    if (slug) {
+      next.set("category", slug);
+      next.delete("search");
+    } else {
+      next.delete("category");
+    }
     router.push(pathname + "?" + next.toString());
   };
 
@@ -68,10 +72,15 @@ export default function Products({ initialCategories, initialProducts }) {
   const { data: categoriesData } = useQuery({
     queryKey: ["categories"],
     queryFn: getCategories,
-    initialData: initialCategories,
+    initialData: initialCategories?.length ? initialCategories : undefined,
+    staleTime: 30 * 1000,
   });
 
-  const categories = useMemo(() => categoriesData ?? [], [categoriesData]);
+  const categories = useMemo(() => {
+    if (Array.isArray(categoriesData)) return categoriesData;
+    if (categoriesData && Array.isArray(categoriesData.categories)) return categoriesData.categories;
+    return [];
+  }, [categoriesData]);
 
   const [page, setPage] = useState(1);
   const limit = 12;
@@ -81,31 +90,22 @@ export default function Products({ initialCategories, initialProducts }) {
   }, [selectedCategory, searchQuery, sort]);
 
   const activeCategorySlugs = useMemo(() => {
-    if (!selectedCategory || !categories.length) return "";
-    const match = categories.find(
-      (p) =>
-        p.slug === selectedCategory ||
-        p.children?.some(
-          (c) =>
-            c.slug === selectedCategory ||
-            c.categories?.includes(selectedCategory)
-        )
-    );
-    if (!match) return selectedCategory;
-    const childSlugs = [];
-    if (match.slug === selectedCategory) {
-      for (const c of match.children ?? []) {
-        childSlugs.push(...(c.categories ?? []));
+    if (!selectedCategory || !categories.length) return selectedCategory || "";
+
+    // If selectedCategory is a Main Parent Category: return parent slug + ALL subcategory slugs
+    const parentMatch = categories.find((p) => p.slug === selectedCategory);
+    if (parentMatch) {
+      const slugs = [parentMatch.slug];
+      if (Array.isArray(parentMatch.children)) {
+        for (const child of parentMatch.children) {
+          if (child.slug) slugs.push(child.slug);
+        }
       }
-    } else {
-      const child = match.children?.find(
-        (c) =>
-          c.slug === selectedCategory ||
-          c.categories?.includes(selectedCategory)
-      );
-      if (child) childSlugs.push(...(child.categories ?? []));
+      return slugs.join(",");
     }
-    return childSlugs.length > 0 ? childSlugs.join(",") : selectedCategory;
+
+    // If selectedCategory is a Subcategory: return ONLY that specific subcategory slug
+    return selectedCategory;
   }, [selectedCategory, categories]);
 
   const { data, isLoading, isFetching } = useQuery({

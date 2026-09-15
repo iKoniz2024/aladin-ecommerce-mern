@@ -23,6 +23,7 @@ import {
   Phone as PhoneIcon,
   Home,
   MapPinned,
+  Mail,
 } from "lucide-react";
 import { Helmet } from "react-helmet-async";
 import useSettings from "@/hooks/useSettings";
@@ -266,6 +267,12 @@ function OrderCard({ order, copied, onCopy }) {
                 <PhoneIcon className="size-3" />
                 {order.shippingAddress?.phone}
               </p>
+              {(order.shippingAddress?.email || order.userEmail || order.email) && (
+                <p className="flex items-center gap-1.5 text-xs text-muted-foreground">
+                  <Mail className="size-3" />
+                  {order.shippingAddress?.email || order.userEmail || order.email}
+                </p>
+              )}
               <p className="flex items-center gap-1.5 text-xs text-muted-foreground">
                 <Home className="size-3" />
                 {order.shippingAddress?.address}

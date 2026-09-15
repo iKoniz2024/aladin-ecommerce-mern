@@ -92,7 +92,7 @@ export default function NewArrivals({ initialData }) {
         ) : (
           <div
             ref={scrollRef}
-            className="-mx-4 flex gap-2 overflow-x-auto px-4 pb-2 sm:gap-3 [&::-webkit-scrollbar]:hidden [&::-webkit-scrollbar]:h-0"
+            className="-mx-4 -my-3 flex gap-3.5 overflow-x-auto overflow-y-hidden px-4 py-3 sm:gap-4 [scrollbar-width:none] [-ms-overflow-style:none] [&::-webkit-scrollbar]:hidden"
           >
             {products.map((product, i) => (
               <NewArrivalsProductCard key={product._id} product={product} index={i} />

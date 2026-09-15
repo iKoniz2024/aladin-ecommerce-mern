@@ -19,6 +19,7 @@ import { Button } from "@/components/ui/Button";
 import Input from "@/components/ui/Input";
 import { Badge } from "@/components/ui/badge";
 import { Skeleton } from "@/components/ui/skeleton";
+import CategorySelect from "@/components/ui/CategorySelect";
 import { Helmet } from "react-helmet-async";
 import useSettings from "@/hooks/useSettings";
 import { useAuth } from "@/hooks/useAuth";
@@ -189,6 +190,7 @@ export default function AdminProducts({ children }) {
     reset,
     setError,
     watch,
+    setValue,
   } = useForm({
     resolver: zodResolver(productSchema),
     defaultValues: {
@@ -422,8 +424,15 @@ export default function AdminProducts({ children }) {
               className="rounded-lg border border-border bg-background px-3 py-2 text-sm outline-none focus:border-ring"
             >
               <option value="">All Categories</option>
-              {categorySlugs.map((slug) => (
-                <option key={slug} value={slug}>{slug}</option>
+              {categories.map((parent, pIndex) => (
+                <optgroup key={parent._id || `${parent.slug}-${pIndex}`} label={parent.name || parent.slug}>
+                  <option value={parent.slug}>{parent.name || parent.slug} (Main)</option>
+                  {parent.children?.map((child, cIndex) => (
+                    <option key={child._id || `${parent.slug}-${child.slug}-${cIndex}`} value={child.slug}>
+                      &nbsp;&nbsp;↳ {child.name || child.slug}
+                    </option>
+                  ))}
+                </optgroup>
               ))}
             </select>
             <select
@@ -498,18 +507,13 @@ export default function AdminProducts({ children }) {
                       {errors.title && <p className="mt-1 text-xs text-destructive">{errors.title.message}</p>}
                     </div>
 
-                    <div>
-                      <label className="mb-1.5 block text-xs font-semibold text-foreground">Category *</label>
-                      <select
-                        {...register("category")}
-                        className={`w-full rounded-lg border border-border bg-background px-3 py-2 text-sm outline-none focus:border-ring ${errors.category ? "border-destructive" : ""}`}
-                      >
-                        <option value="">Select category</option>
-                        {categorySlugs.map((slug) => (
-                          <option key={slug} value={slug}>{slug}</option>
-                        ))}
-                      </select>
-                      {errors.category && <p className="mt-1 text-xs text-destructive">{errors.category.message}</p>}
+                    <div className="sm:col-span-2">
+                      <CategorySelect
+                        categories={categories}
+                        value={watch("category")}
+                        onChange={(slug) => setValue("category", slug, { shouldValidate: true })}
+                        error={errors.category?.message}
+                      />
                     </div>
 
                     <div>

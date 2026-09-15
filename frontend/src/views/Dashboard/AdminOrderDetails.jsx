@@ -286,8 +286,11 @@ export default function AdminOrderDetails({ children }) {
               <div className="text-sm text-muted-foreground">
                 <p className="font-medium text-foreground">{order.shippingAddress?.fullName}</p>
                 <p>{order.shippingAddress?.phone}</p>
+                {(order.shippingAddress?.email || order.userEmail || order.email) && (
+                  <p>{order.shippingAddress?.email || order.userEmail || order.email}</p>
+                )}
                 <p>{order.shippingAddress?.address}</p>
-                <p>{order.shippingAddress?.city}, {order.shippingAddress?.postalCode}</p>
+                <p>{order.shippingAddress?.city}{order.shippingAddress?.postalCode ? `, ${order.shippingAddress.postalCode}` : ""}</p>
               </div>
             </div>
 

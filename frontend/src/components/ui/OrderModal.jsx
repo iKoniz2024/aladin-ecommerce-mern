@@ -13,6 +13,19 @@ export default function OrderModal({ product, open, onClose, mode = "checkout" }
   const { addToCart } = useAddToCart();
   const [selectedSize, setSelectedSize] = useState(null);
   const [selectedColor, setSelectedColor] = useState(() => product?.colors?.[0] || null);
+  const [selectedDynamicAttrs, setSelectedDynamicAttrs] = useState(() => {
+    const initialAttrs = {};
+    if (product?.attributes && typeof product.attributes === "object") {
+      Object.entries(product.attributes).forEach(([k, v]) => {
+        if (k === "sizes" || k === "size" || k === "colors" || k === "color") return;
+        let options = [];
+        if (Array.isArray(v)) options = v.filter(Boolean);
+        else if (typeof v === "string" && v.includes(",")) options = v.split(",").map(s => s.trim()).filter(Boolean);
+        if (options.length > 0) initialAttrs[k] = options[0];
+      });
+    }
+    return initialAttrs;
+  });
   const [activeDisplayImage, setActiveDisplayImage] = useState(() => product?.colors?.[0]?.image || null);
   const [quantity, setQuantity] = useState(1);
 
@@ -77,6 +90,17 @@ export default function OrderModal({ product, open, onClose, mode = "checkout" }
     setSelectedSize(availableSizes[0]);
   }
 
+  const getFinalVariantLabel = () => {
+    const dynamicSpecs = Object.entries(selectedDynamicAttrs)
+      .map(([k, v]) => {
+        const label = k.replace(/_/g, " ").replace(/\b\w/g, (c) => c.toUpperCase());
+        return `${label}: ${v}`;
+      })
+      .filter(Boolean)
+      .join(", ");
+    return [selectedSize, dynamicSpecs].filter(Boolean).join(" | ");
+  };
+
   const handleAddToCartOnly = async () => {
     if (hasSizes && !selectedSize) {
       toast.error("Please select a size");
@@ -89,7 +113,7 @@ export default function OrderModal({ product, open, onClose, mode = "checkout" }
     await addToCart(
       product,
       quantity,
-      selectedSize || "",
+      getFinalVariantLabel() || "",
       selectedColor?.name || "",
       selectedColor?.image || ""
     );
@@ -109,7 +133,7 @@ export default function OrderModal({ product, open, onClose, mode = "checkout" }
     await addToCart(
       product,
       quantity,
-      selectedSize || "",
+      getFinalVariantLabel() || "",
       selectedColor?.name || "",
       selectedColor?.image || ""
     );
@@ -256,6 +280,55 @@ export default function OrderModal({ product, open, onClose, mode = "checkout" }
                 </div>
               </div>
             )}
+
+            {/* Dynamic Selectable Attribute Options (e.g. Age Range, Shoe Size, RAM, Storage, etc.) */}
+            {product?.attributes && typeof product.attributes === "object" && (() => {
+              const selectableEntries = Object.entries(product.attributes).filter(([key, val]) => {
+                if (key === "sizes" || key === "size" || key === "colors" || key === "color") return false;
+                if (Array.isArray(val) && val.length > 0) return true;
+                if (typeof val === "string" && val.includes(",")) return true;
+                return false;
+              });
+
+              if (selectableEntries.length === 0) return null;
+
+              return selectableEntries.map(([key, val]) => {
+                const options = Array.isArray(val)
+                  ? val
+                  : String(val).split(",").map((s) => s.trim()).filter(Boolean);
+                if (options.length === 0) return null;
+
+                const label = key.replace(/_/g, " ").replace(/\b\w/g, (c) => c.toUpperCase());
+                const selectedVal = selectedDynamicAttrs[key] || options[0];
+
+                return (
+                  <div key={key}>
+                    <p className="mb-2 text-sm font-medium text-foreground">
+                      Choose {label} : <span className="font-normal text-muted-foreground">{selectedVal || `Select ${label}`}</span>
+                    </p>
+                    <div className="flex flex-wrap gap-2">
+                      {options.map((opt) => {
+                        const isSelected = selectedVal === opt;
+                        return (
+                          <button
+                            key={opt}
+                            type="button"
+                            onClick={() => setSelectedDynamicAttrs((prev) => ({ ...prev, [key]: opt }))}
+                            className={`rounded-lg border px-3 py-1.5 text-xs font-semibold transition-all cursor-pointer ${
+                              isSelected
+                                ? "border-primary bg-primary text-primary-foreground shadow-xs ring-2 ring-primary/30"
+                                : "border-border bg-card text-foreground hover:border-foreground/50"
+                            }`}
+                          >
+                            {opt}
+                          </button>
+                        );
+                      })}
+                    </div>
+                  </div>
+                );
+              });
+            })()}
 
             <div>
               <p className="mb-2 text-sm font-medium text-foreground">Choose Quantity</p>
