@@ -206,25 +206,25 @@ const Navbar = () => {
                                     <ChevronDown className="size-3.5 text-blue-100/70 group-hover/cat:rotate-180 transition-transform duration-200" />
                                 </button>
 
-                                {/* Mega Dropdown Menu (Full Content Width - Glassmorphism) */}
-                                <div className="invisible opacity-0 group-hover/cat:visible group-hover/cat:opacity-100 transition-all duration-200 absolute left-4 right-4 top-full z-100 mt-1 rounded-2xl border border-white/60 dark:border-slate-800/80 bg-white/80 dark:bg-slate-900/80 backdrop-blur-xl p-6 shadow-2xl text-slate-900 dark:text-white">
+                                {/* Mega Dropdown Menu (Full Content Width - Navbar Colored Glassmorphism) */}
+                                <div className="invisible opacity-0 group-hover/cat:visible group-hover/cat:opacity-100 transition-all duration-200 absolute left-4 right-4 top-full z-100 mt-1 rounded-2xl border border-white/20 bg-[#082d56]/90 backdrop-blur-2xl p-6 shadow-2xl text-white">
                                     <div className="grid grid-cols-2 sm:grid-cols-3 lg:grid-cols-6 gap-6 max-h-[420px] overflow-y-auto pr-1">
                                         {categories && categories.length > 0 ? (
                                             categories.map((cat, idx) => (
                                                 <div key={cat._id || `${cat.slug || 'cat'}-${idx}`} className="space-y-2">
                                                     <Link
                                                         href={`/products?category=${cat.slug}`}
-                                                        className="block text-sm sm:text-base font-extrabold text-slate-900 dark:text-white hover:text-primary transition-colors truncate"
+                                                        className="block text-sm sm:text-base font-extrabold text-white hover:text-[#FFA800] transition-colors truncate"
                                                     >
                                                         {cat.name}
                                                     </Link>
                                                     {cat.children && cat.children.length > 0 && (
-                                                        <ul className="space-y-1.5 text-xs sm:text-sm text-slate-600 dark:text-slate-300 font-medium">
+                                                        <ul className="space-y-1.5 text-xs sm:text-sm text-blue-100/75 font-medium">
                                                             {cat.children.map((child, cIdx) => (
                                                                 <li key={child._id || `${child.slug || 'child'}-${cIdx}`}>
                                                                     <Link
                                                                         href={`/products?category=${child.slug}`}
-                                                                        className="hover:text-slate-900 dark:hover:text-white hover:underline block truncate"
+                                                                        className="hover:text-white hover:underline block truncate transition-colors"
                                                                     >
                                                                         {child.name}
                                                                     </Link>
@@ -235,7 +235,7 @@ const Navbar = () => {
                                                 </div>
                                             ))
                                         ) : (
-                                            <p className="text-xs text-slate-400 col-span-full">Loading categories...</p>
+                                            <p className="text-xs text-blue-200/60 col-span-full">Loading categories...</p>
                                         )}
                                     </div>
                                 </div>
