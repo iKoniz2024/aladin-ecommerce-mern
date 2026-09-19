@@ -3,7 +3,13 @@ const dns = require('dns');
 const { setupIndexes } = require("../utils/setupIndexes");
 const { warmUpCache } = require("../utils/cache");
 
-dns.setServers(["8.8.8.8", "1.1.1.1"]);
+if (!process.env.VERCEL) {
+    try {
+        dns.setServers(["8.8.8.8", "1.1.1.1"]);
+    } catch (e) {
+        console.warn("DNS setServers skipped:", e.message);
+    }
+}
 
 const dbUser = encodeURIComponent(process.env.DB_USER || "");
 const dbPass = encodeURIComponent(process.env.DB_PASS || "");
