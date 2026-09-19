@@ -21,6 +21,10 @@ const setupIndexes = async (db) => {
         // 3. Indexes for getFeaturedProducts
         await productsCollection.createIndex({ rating: -1 });
 
+        // Indexes for categories collection
+        const categoriesCollection = db.collection("categories");
+        await categoriesCollection.createIndex({ createdAt: -1 });
+
         // Indexes for orders collection
         // 1. Index for getBestSellingProducts aggregation
         await ordersCollection.createIndex({ "items.productId": 1 });

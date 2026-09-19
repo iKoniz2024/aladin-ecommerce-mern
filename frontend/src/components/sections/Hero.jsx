@@ -42,18 +42,24 @@ export default function Hero({ initialData }) {
     queryKey: ["banners"],
     queryFn: getBanners,
     initialData,
+    staleTime: 1000 * 60 * 1, // 1 minute cache
+    gcTime: 1000 * 60 * 30,
   });
 
   // Flash Sale query for Right Promo Card
   const { data: flashData } = useQuery({
     queryKey: ["flash-sale"],
     queryFn: getFlashSaleProducts,
+    staleTime: 1000 * 60 * 1, // 1 minute cache
+    gcTime: 1000 * 60 * 30,
   });
 
   // Featured Vendor query
   const { data: featuredVendorData } = useQuery({
     queryKey: ["featured-vendor"],
     queryFn: getFeaturedVendor,
+    staleTime: 1000 * 60 * 1, // 1 minute cache
+    gcTime: 1000 * 60 * 30,
   });
 
   const banners = useMemo(() => {

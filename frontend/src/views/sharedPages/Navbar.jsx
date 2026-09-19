@@ -2,12 +2,12 @@
 
 import Link from 'next/link';
 import { useRouter, usePathname, useSearchParams } from 'next/navigation';
-import { useState, useEffect } from "react";
-import { Search, ShoppingCart, Sun, Moon, Menu, X, Phone, Package, House, Store, TrendingUp, Zap, Sparkles, LayoutGrid, ChevronDown } from "lucide-react";
+import { useState, useEffect, useMemo, useRef } from "react";
+import { Search, ShoppingCart, Sun, Moon, Menu, X, Phone, Package, House, Store, TrendingUp, Zap, Sparkles, LayoutGrid, ChevronDown, User, LogOut, LayoutDashboard, LogIn } from "lucide-react";
 import { useQuery } from "@tanstack/react-query";
 import useCart from "@/hooks/useCart";
 import useTheme from "@/hooks/useTheme";
-import { getCategories } from "@/services/category.api";
+import { getCategoriesWithCounts } from "@/services/category.api";
 import useSettings from "@/hooks/useSettings";
 import { getLocalCartCount } from "@/utils/localCart";
 import { useAuth } from "@/hooks/useAuth";
@@ -23,11 +23,31 @@ const Navbar = () => {
     const [mobileOpen, setMobileOpen] = useState(false);
     const [mobileCatOpen, setMobileCatOpen] = useState(false);
     const [mounted, setMounted] = useState(false);
+    const [profileOpen, setProfileOpen] = useState(false);
+    const profileRef = useRef(null);
 
-    const { data: categories } = useQuery({
-        queryKey: ["categories"],
-        queryFn: getCategories,
+    useEffect(() => {
+        const handleClickOutside = (event) => {
+            if (profileRef.current && !profileRef.current.contains(event.target)) {
+                setProfileOpen(false);
+            }
+        };
+        document.addEventListener("mousedown", handleClickOutside);
+        return () => document.removeEventListener("mousedown", handleClickOutside);
+    }, []);
+
+    const { data: categoriesData } = useQuery({
+        queryKey: ["categories-with-counts"],
+        queryFn: getCategoriesWithCounts,
+        staleTime: 1000 * 60 * 1, // 1 minute cache
+        gcTime: 1000 * 60 * 30,
     });
+
+    const categoriesList = useMemo(() => {
+        if (Array.isArray(categoriesData)) return categoriesData;
+        if (Array.isArray(categoriesData?.categories)) return categoriesData.categories;
+        return [];
+    }, [categoriesData]);
 
     const handleSearchSubmit = (e) => {
         if (e) e.preventDefault();
@@ -134,44 +154,58 @@ const Navbar = () => {
 
                         {mounted && (
                             user ? (
-                                <div className="relative hidden sm:block group/profile">
+                                <div ref={profileRef} className="relative group/profile">
                                     <button
-                                        className="flex size-9 items-center justify-center rounded-full bg-[#FFA800] text-sm font-black text-[#0B3C73] shadow-md ring-2 ring-[#FFA800]/40 transition-all duration-200 hover:scale-105"
+                                        onClick={() => setProfileOpen((prev) => !prev)}
+                                        className="flex size-9 items-center justify-center rounded-full bg-[#FFA800] text-sm font-black text-[#0B3C73] shadow-md ring-2 ring-[#FFA800]/40 transition-all duration-200 hover:scale-105 cursor-pointer"
+                                        title="Account Menu"
                                     >
                                         {user?.name?.charAt(0)?.toUpperCase() || "U"}
                                     </button>
-                                    <div className="invisible opacity-0 group-hover/profile:visible group-hover/profile:opacity-100 transition-all duration-200 absolute right-0 top-full z-50 mt-2 w-56 rounded-2xl border border-white/20 bg-[#0B3C73] p-2 shadow-2xl text-white">
-                                        <div className="px-3 py-2 border-b border-white/15 mb-1">
+                                    <div
+                                        className={`transition-all duration-200 absolute right-0 top-full z-50 mt-2 w-60 rounded-2xl border border-white/20 bg-[#0B3C73] p-2.5 shadow-2xl text-white ${
+                                            profileOpen
+                                                ? "visible opacity-100 scale-100"
+                                                : "invisible opacity-0 scale-95 group-hover/profile:visible group-hover/profile:opacity-100 group-hover/profile:scale-100"
+                                        }`}
+                                    >
+                                        <div className="px-3 py-2.5 border-b border-white/15 mb-1.5">
                                             <p className="text-sm font-bold text-white truncate">{user?.name}</p>
                                             <p className="text-xs text-blue-100/70 truncate">{user?.email}</p>
                                         </div>
                                         <Link
                                             href={user?.role === "vendor" ? "/dashboard/vendor" : "/dashboard"}
-                                            className="flex items-center gap-2 rounded-xl px-3 py-2 text-xs font-semibold text-white hover:bg-white/10 hover:text-[#FFA800] transition-colors"
+                                            onClick={() => setProfileOpen(false)}
+                                            className="flex items-center gap-2.5 rounded-xl px-3 py-2 text-xs font-semibold text-white hover:bg-white/10 hover:text-[#FFA800] transition-colors"
                                         >
-                                            Dashboard
+                                            <LayoutDashboard className="size-4 text-[#FFA800]" />
+                                            <span>Dashboard</span>
                                         </Link>
                                         <Link
                                             href="/dashboard/profile"
-                                            className="flex items-center gap-2 rounded-xl px-3 py-2 text-xs font-semibold text-white hover:bg-white/10 hover:text-[#FFA800] transition-colors"
+                                            onClick={() => setProfileOpen(false)}
+                                            className="flex items-center gap-2.5 rounded-xl px-3 py-2 text-xs font-semibold text-white hover:bg-white/10 hover:text-[#FFA800] transition-colors"
                                         >
-                                            Profile
+                                            <User className="size-4 text-[#FFA800]" />
+                                            <span>Profile</span>
                                         </Link>
                                         <button
                                             onClick={async () => {
+                                                setProfileOpen(false);
                                                 await logout();
                                                 router.push("/");
                                             }}
-                                            className="flex w-full items-center gap-2 rounded-xl px-3 py-2 text-xs font-semibold text-rose-300 hover:bg-rose-950/40 transition-colors"
+                                            className="flex w-full items-center gap-2.5 rounded-xl px-3 py-2 text-xs font-semibold text-rose-300 hover:bg-rose-950/40 transition-colors cursor-pointer mt-1"
                                         >
-                                            Logout
+                                            <LogOut className="size-4 text-rose-300" />
+                                            <span>Logout</span>
                                         </button>
                                     </div>
                                 </div>
                             ) : (
                                 <Link
                                     href="/login"
-                                    className="hidden sm:inline-flex rounded-full bg-[#FFA800] px-4 py-2 text-xs font-black text-[#0B3C73] transition-all duration-200 hover:bg-[#ffb733] shadow-md hover:scale-105"
+                                    className="inline-flex rounded-full bg-[#FFA800] px-4 py-2 text-xs font-black text-[#0B3C73] transition-all duration-200 hover:bg-[#ffb733] shadow-md hover:scale-105"
                                 >
                                     Login
                                 </Link>
@@ -209,8 +243,8 @@ const Navbar = () => {
                                 {/* Mega Dropdown Menu (Full Content Width - Navbar Colored Glassmorphism) */}
                                 <div className="invisible opacity-0 group-hover/cat:visible group-hover/cat:opacity-100 transition-all duration-200 absolute left-4 right-4 top-full z-100 mt-1 rounded-2xl border border-white/20 bg-[#082d56]/90 backdrop-blur-2xl p-6 shadow-2xl text-white">
                                     <div className="grid grid-cols-2 sm:grid-cols-3 lg:grid-cols-6 gap-6 max-h-[420px] overflow-y-auto pr-1">
-                                        {categories && categories.length > 0 ? (
-                                            categories.map((cat, idx) => (
+                                        {categoriesList && categoriesList.length > 0 ? (
+                                            categoriesList.map((cat, idx) => (
                                                 <div key={cat._id || `${cat.slug || 'cat'}-${idx}`} className="space-y-2">
                                                     <Link
                                                         href={`/products?category=${cat.slug}`}
@@ -283,69 +317,144 @@ const Navbar = () => {
                         className="absolute inset-0 bg-black/60 backdrop-blur-xs"
                         onClick={() => setMobileOpen(false)}
                     />
-                    <div className="absolute inset-y-0 left-0 w-80 max-w-[85vw] bg-[#0B3C73] text-white shadow-2xl overflow-y-auto border-r border-white/10">
-                        <div className="flex items-center justify-between border-b border-white/15 px-5 py-4">
-                            <Link href="/" onClick={() => setMobileOpen(false)}>
-                                {logo ? (
-                                    <img src={logo} alt={siteName || "Logo"} className="h-9 w-auto object-contain" />
-                                ) : siteName ? (
-                                    <span suppressHydrationWarning className="text-lg font-black text-white">{siteName}</span>
-                                ) : null}
-                            </Link>
-                            <button
-                                onClick={() => setMobileOpen(false)}
-                                className="flex size-8 items-center justify-center rounded-lg text-white/80 hover:bg-white/10 hover:text-white"
-                            >
-                                <X className="size-5" />
-                            </button>
+                    <div className="absolute inset-y-0 left-0 w-80 max-w-[85vw] bg-[#0B3C73] text-white shadow-2xl overflow-y-auto border-r border-white/10 flex flex-col justify-between">
+                        <div>
+                            <div className="flex items-center justify-between border-b border-white/15 px-5 py-4">
+                                <Link href="/" onClick={() => setMobileOpen(false)}>
+                                    {logo ? (
+                                        <img src={logo} alt={siteName || "Logo"} className="h-9 w-auto object-contain" />
+                                    ) : siteName ? (
+                                        <span suppressHydrationWarning className="text-lg font-black text-white">{siteName}</span>
+                                    ) : null}
+                                </Link>
+                                <button
+                                    onClick={() => setMobileOpen(false)}
+                                    className="flex size-8 items-center justify-center rounded-lg text-white/80 hover:bg-white/10 hover:text-white cursor-pointer"
+                                >
+                                    <X className="size-5" />
+                                </button>
+                            </div>
+
+                            <div className="px-5 py-4">
+                                <form onSubmit={handleSearchSubmit} className="relative">
+                                    <Search className="absolute left-3 top-1/2 size-4 -translate-y-1/2 text-blue-100/70" />
+                                    <input
+                                        type="text"
+                                        placeholder="Search products or vendors..."
+                                        value={search}
+                                        onChange={(e) => setSearch(e.target.value)}
+                                        className="w-full rounded-full border border-white/20 bg-white/10 py-2.5 pl-10 pr-4 text-xs text-white placeholder:text-blue-100/60 outline-none focus:border-[#FFA800]"
+                                    />
+                                </form>
+                            </div>
+
+                            <nav className="border-t border-white/15 px-5 py-3 space-y-1">
+                                <Link
+                                    href="/"
+                                    onClick={() => setMobileOpen(false)}
+                                    className="flex items-center gap-3 rounded-lg px-3 py-2 text-sm font-medium text-blue-100 hover:bg-white/10 hover:text-white"
+                                >
+                                    <House className="size-4 text-[#FFA800]" /> Home
+                                </Link>
+
+                                <Link
+                                    href="/products"
+                                    onClick={() => setMobileOpen(false)}
+                                    className="flex items-center gap-3 rounded-lg px-3 py-2 text-sm font-medium text-blue-100 hover:bg-white/10 hover:text-white"
+                                >
+                                    <Store className="size-4 text-[#FFA800]" /> Shop Products
+                                </Link>
+
+                                <Link
+                                    href="/best-selling"
+                                    onClick={() => setMobileOpen(false)}
+                                    className="flex items-center gap-3 rounded-lg px-3 py-2 text-sm font-medium text-blue-100 hover:bg-white/10 hover:text-white"
+                                >
+                                    <TrendingUp className="size-4 text-[#FFA800]" /> Best Selling
+                                </Link>
+
+                                <Link
+                                    href="/flash-sale"
+                                    onClick={() => setMobileOpen(false)}
+                                    className="flex items-center gap-3 rounded-lg px-3 py-2 text-sm font-medium text-blue-100 hover:bg-white/10 hover:text-white"
+                                >
+                                    <Zap className="size-4 text-rose-400" /> Flash Deals
+                                </Link>
+
+                                <Link
+                                    href="/orders"
+                                    onClick={() => setMobileOpen(false)}
+                                    className="flex items-center gap-3 rounded-lg px-3 py-2 text-sm font-medium text-blue-100 hover:bg-white/10 hover:text-white"
+                                >
+                                    <Package className="size-4 text-[#FFA800]" /> Track Order
+                                </Link>
+
+                                <Link
+                                    href="/become-seller"
+                                    onClick={() => setMobileOpen(false)}
+                                    className="flex items-center gap-3 rounded-lg px-3 py-2 text-sm font-medium text-blue-100 hover:bg-white/10 hover:text-white"
+                                >
+                                    <Sparkles className="size-4 text-[#FFA800]" /> Become a Seller
+                                </Link>
+                            </nav>
                         </div>
 
-                        <div className="px-5 py-4">
-                            <form onSubmit={handleSearchSubmit} className="relative">
-                                <Search className="absolute left-3 top-1/2 size-4 -translate-y-1/2 text-blue-100/70" />
-                                <input
-                                    type="text"
-                                    placeholder="Search products or vendors..."
-                                    value={search}
-                                    onChange={(e) => setSearch(e.target.value)}
-                                    className="w-full rounded-full border border-white/20 bg-white/10 py-2.5 pl-10 pr-4 text-xs text-white placeholder:text-blue-100/60 outline-none focus:border-[#FFA800]"
-                                />
-                            </form>
-                        </div>
-
-                        <nav className="border-t border-white/15 px-5 py-3 space-y-1">
-                            <Link
-                                href="/"
-                                onClick={() => setMobileOpen(false)}
-                                className="flex items-center gap-3 rounded-lg px-3 py-2 text-sm font-medium text-blue-100 hover:bg-white/10 hover:text-white"
-                            >
-                                <House className="size-4 text-[#FFA800]" /> Home
-                            </Link>
-
-                            <Link
-                                href="/products"
-                                onClick={() => setMobileOpen(false)}
-                                className="flex items-center gap-3 rounded-lg px-3 py-2 text-sm font-medium text-blue-100 hover:bg-white/10 hover:text-white"
-                            >
-                                <Store className="size-4 text-[#FFA800]" /> Shop Products
-                            </Link>
-
-                            <Link
-                                href="/best-selling"
-                                onClick={() => setMobileOpen(false)}
-                                className="flex items-center gap-3 rounded-lg px-3 py-2 text-sm font-medium text-blue-100 hover:bg-white/10 hover:text-white"
-                            >
-                                <TrendingUp className="size-4 text-[#FFA800]" /> Best Selling
-                            </Link>
-
-                            <Link
-                                href="/flash-sale"
-                                onClick={() => setMobileOpen(false)}
-                                className="flex items-center gap-3 rounded-lg px-3 py-2 text-sm font-medium text-blue-100 hover:bg-white/10 hover:text-white"
-                            >
-                                <Zap className="size-4 text-rose-400" /> Flash Deals
-                            </Link>
-                        </nav>
+                        {/* Mobile Drawer Profile / Account Footer */}
+                        {mounted && (
+                            user ? (
+                                <div className="border-t border-white/15 px-5 py-4 mt-auto space-y-3 bg-white/5">
+                                    <div className="flex items-center gap-3">
+                                        <div className="flex size-10 items-center justify-center rounded-full bg-[#FFA800] text-base font-black text-[#0B3C73] shadow-md shrink-0">
+                                            {user?.name?.charAt(0)?.toUpperCase() || "U"}
+                                        </div>
+                                        <div className="truncate flex-1 min-w-0">
+                                            <p className="text-sm font-bold text-white truncate">{user?.name}</p>
+                                            <p className="text-xs text-blue-100/70 truncate">{user?.email}</p>
+                                        </div>
+                                    </div>
+                                    <div className="grid grid-cols-2 gap-2 pt-1">
+                                        <Link
+                                            href={user?.role === "vendor" ? "/dashboard/vendor" : "/dashboard"}
+                                            onClick={() => setMobileOpen(false)}
+                                            className="flex items-center justify-center gap-2 rounded-xl bg-white/10 px-3 py-2.5 text-xs font-bold text-white hover:bg-white/20 transition-all"
+                                        >
+                                            <LayoutDashboard className="size-3.5 text-[#FFA800]" />
+                                            <span>Dashboard</span>
+                                        </Link>
+                                        <Link
+                                            href="/dashboard/profile"
+                                            onClick={() => setMobileOpen(false)}
+                                            className="flex items-center justify-center gap-2 rounded-xl bg-white/10 px-3 py-2.5 text-xs font-bold text-white hover:bg-white/20 transition-all"
+                                        >
+                                            <User className="size-3.5 text-[#FFA800]" />
+                                            <span>Profile</span>
+                                        </Link>
+                                    </div>
+                                    <button
+                                        onClick={async () => {
+                                            setMobileOpen(false);
+                                            await logout();
+                                            router.push("/");
+                                        }}
+                                        className="flex w-full items-center justify-center gap-2 rounded-xl bg-rose-500/20 border border-rose-500/30 px-3 py-2.5 text-xs font-bold text-rose-300 hover:bg-rose-500/30 transition-all cursor-pointer"
+                                    >
+                                        <LogOut className="size-3.5 text-rose-300" />
+                                        <span>Logout</span>
+                                    </button>
+                                </div>
+                            ) : (
+                                <div className="border-t border-white/15 px-5 py-4 mt-auto">
+                                    <Link
+                                        href="/login"
+                                        onClick={() => setMobileOpen(false)}
+                                        className="flex w-full items-center justify-center gap-2 rounded-full bg-[#FFA800] py-2.5 text-xs font-black text-[#0B3C73] shadow-md hover:bg-[#ffb733]"
+                                    >
+                                        <LogIn className="size-4" />
+                                        <span>Login / Register</span>
+                                    </Link>
+                                </div>
+                            )
+                        )}
                     </div>
                 </div>
             )}

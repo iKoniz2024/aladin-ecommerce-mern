@@ -33,6 +33,8 @@ export default function NewArrivals({ initialData }) {
     queryKey: ["new-arrivals"],
     queryFn: getNewArrivals,
     initialData: (initialData?.products?.length > 0) ? initialData : undefined,
+    staleTime: 1000 * 60 * 1, // 1 minute cache
+    gcTime: 1000 * 60 * 30,
   });
 
   const products = data?.products ?? [];

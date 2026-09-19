@@ -41,6 +41,8 @@ export default function FlashSale({ initialData }) {
     queryKey: ["flash-sale"],
     queryFn: getFlashSaleProducts,
     initialData: (initialData?.products?.length > 0) ? initialData : undefined,
+    staleTime: 1000 * 60 * 1, // 1 minute cache
+    gcTime: 1000 * 60 * 30,
   });
 
   const products = data?.products ?? [];

@@ -34,22 +34,49 @@ const withCache = async (key, ttlSeconds, fetchFunction) => {
  */
 const warmUpCache = async (db) => {
     if (!db) return;
-    try {
-        console.log("Warming up cache for products, orders, categories, and banners...");
+    console.log("Warming up cache for products, orders, categories, and banners...");
 
-        // 1. Warm up Banners
+    // 1. Warm up Banners
+    try {
         const bannersCollection = db.collection("banners");
         await withCache("banners", 15, async () => {
             return await bannersCollection.find({}).sort({ createdAt: -1 }).toArray();
         });
+    } catch (err) {
+        console.warn("Banners cache warmup skipped due to network delay:", err.message);
+    }
 
-        // 2. Warm up Categories
+    // 2. Warm up Categories
+    try {
         const categoriesCollection = db.collection("categories");
-        await withCache("categories_null_null_", 15, async () => {
+        const productsCollection = db.collection("products");
+
+        await withCache("categories_null_null_", 120, async () => {
             return await categoriesCollection.find({}).sort({ createdAt: -1 }).toArray();
         });
 
-        // 3. Warm up Orders
+        await withCache("categoriesWithCounts", 120, async () => {
+            const categories = await categoriesCollection.find().sort({ createdAt: -1 }).toArray();
+            const countResult = await productsCollection.aggregate([
+                { $group: { _id: "$category", count: { $sum: 1 } } }
+            ]).toArray();
+            const countMap = new Map(countResult.map(r => [r._id, r.count]));
+            return categories.map(parent => {
+                let totalCount = 0;
+                for (const child of parent.children ?? []) {
+                    for (const catSlug of child.categories ?? []) {
+                        totalCount += countMap.get(catSlug) ?? 0;
+                    }
+                }
+                return { ...parent, productCount: totalCount };
+            });
+        });
+    } catch (err) {
+        console.warn("Categories cache warmup skipped due to network delay:", err.message);
+    }
+
+    // 3. Warm up Orders
+    try {
         const ordersCollection = db.collection("orders");
         await withCache("orders_null_null_", 15, async () => {
             const orders = await ordersCollection.find({})
@@ -82,14 +109,19 @@ const warmUpCache = async (db) => {
                     }
                 })
                 .sort({ createdAt: -1 })
+                .limit(100)
                 .toArray();
             return {
                 totalOrders: orders.length,
                 orders
             };
         });
+    } catch (err) {
+        console.warn("Orders cache warmup skipped due to network delay:", err.message);
+    }
 
-        // 4. Warm up Products
+    // 4. Warm up Products
+    try {
         const productsCollection = db.collection("products");
         await withCache("products_null_null____", 15, async () => {
             const products = await productsCollection.find({})
@@ -108,17 +140,18 @@ const warmUpCache = async (db) => {
                     minimumOrderQuantity: 0
                 })
                 .sort({ _id: -1 })
+                .limit(200)
                 .toArray();
             return {
                 totalProducts: products.length,
                 products
             };
         });
-
-        console.log("Cache warming completed successfully!");
-    } catch (error) {
-        console.error("Error warming up cache:", error);
+    } catch (err) {
+        console.warn("Products cache warmup skipped due to network delay:", err.message);
     }
+
+    console.log("Cache warming completed.");
 };
 
 /**

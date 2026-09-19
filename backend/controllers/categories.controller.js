@@ -37,7 +37,7 @@ const createCategory = async (req, res) => {
 
 const getCategoriesWithCounts = async (req, res) => {
     try {
-        const categoriesWithCounts = await withCache("categoriesWithCounts", 15, async () => {
+        const categoriesWithCounts = await withCache("categoriesWithCounts", 120, async () => {
             const db = getDB();
             const categoriesCollection = db.collection("categories");
             const productsCollection = db.collection("products");
@@ -86,7 +86,7 @@ const getAllCategories = async (req, res) => {
         }
 
         const cacheKey = `categories_${page}_${limit}_${search}`;
-        const result = await withCache(cacheKey, 15, async () => {
+        const result = await withCache(cacheKey, 120, async () => {
             if (page && limit) {
                 const skip = (page - 1) * limit;
                 const totalCategories = await categoriesCollection.countDocuments(query);

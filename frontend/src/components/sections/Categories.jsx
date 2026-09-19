@@ -28,6 +28,8 @@ export default function Categories({ initialData }) {
     queryKey: ["categories-with-counts"],
     queryFn: getCategoriesWithCounts,
     initialData: (Array.isArray(initialData) && initialData.length > 0) ? initialData : undefined,
+    staleTime: 1000 * 60 * 1, // 1 minute cache
+    gcTime: 1000 * 60 * 30,
   });
 
   const categories = useMemo(() => {
