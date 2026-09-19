@@ -2,6 +2,7 @@ const { ObjectId } = require("mongodb");
 const { getDB } = require("../config/db");
 const { withCache, clearCache } = require("../utils/cache");
 const { buildIdQuery } = require("../utils/buildIdQuery");
+const { deleteFile } = require("../utils/deleteFile");
 
 const createBanner = async (req, res) => {
     try {
@@ -35,10 +36,10 @@ const createBanner = async (req, res) => {
 
 const getAllBanners = async (req, res) => {
     try {
-        const banners = await withCache("banners", 15, async () => {
+        const banners = await withCache("banners", 120, async () => {
             const db = getDB();
             const bannersCollection = db.collection("banners");
-            return await bannersCollection.find({}).sort({ createdAt: -1 }).toArray();
+            return await bannersCollection.find({ isActive: { $ne: false } }).sort({ createdAt: -1 }).toArray();
         });
         res.send(banners);
     } catch (error) {
@@ -68,13 +69,22 @@ const updateBanner = async (req, res) => {
         const { id } = req.params;
         const db = getDB();
         const bannersCollection = db.collection("banners");
+
+        const existingBanner = await bannersCollection.findOne(buildIdQuery(id));
+        if (!existingBanner) {
+            return res.status(404).send({ message: "Banner not found" });
+        }
+
+        // Delete old image if a new image URL is being updated
+        if (req.body.image && existingBanner.image && req.body.image !== existingBanner.image) {
+            await deleteFile(existingBanner.image);
+        }
+
         const result = await bannersCollection.updateOne(
             buildIdQuery(id),
             { $set: { ...req.body, updatedAt: new Date() } }
         );
-        if (result.matchedCount === 0) {
-            return res.status(404).send({ message: "Banner not found" });
-        }
+
         clearCache();
         res.send({ message: "Banner updated successfully" });
     } catch (error) {
@@ -88,10 +98,17 @@ const deleteBanner = async (req, res) => {
         const { id } = req.params;
         const db = getDB();
         const bannersCollection = db.collection("banners");
-        const result = await bannersCollection.deleteOne(buildIdQuery(id));
-        if (result.deletedCount === 0) {
+
+        const existingBanner = await bannersCollection.findOne(buildIdQuery(id));
+        if (!existingBanner) {
             return res.status(404).send({ message: "Banner not found" });
         }
+
+        if (existingBanner.image) {
+            await deleteFile(existingBanner.image);
+        }
+
+        await bannersCollection.deleteOne(buildIdQuery(id));
         clearCache();
         res.send({ message: "Banner deleted successfully" });
     } catch (error) {

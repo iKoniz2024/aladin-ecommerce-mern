@@ -2,6 +2,7 @@ const { getDB } = require("../config/db");
 const { ObjectId } = require("mongodb");
 const { withCache, clearCache } = require("../utils/cache");
 const { buildIdQuery } = require("../utils/buildIdQuery");
+const { deleteFile } = require("../utils/deleteFile");
 
 const createCategory = async (req, res) => {
     try {
@@ -149,6 +150,15 @@ const updateCategory = async (req, res) => {
         const db = getDB();
         const categoriesCollection = db.collection("categories");
 
+        const existingCat = await categoriesCollection.findOne(buildIdQuery(id));
+        if (!existingCat) {
+            return res.status(404).send({ message: "Category not found" });
+        }
+
+        if (req.body.image && existingCat.image && req.body.image !== existingCat.image) {
+            await deleteFile(existingCat.image);
+        }
+
         const result = await categoriesCollection.updateOne(
             buildIdQuery(id),
             {
@@ -158,10 +168,6 @@ const updateCategory = async (req, res) => {
                 }
             }
         );
-
-        if (result.matchedCount === 0) {
-            return res.status(404).send({ message: "Category not found" });
-        }
 
         clearCache();
         res.send({ message: "Category updated successfully" });
@@ -178,11 +184,16 @@ const deleteCategory = async (req, res) => {
         const db = getDB();
         const categoriesCollection = db.collection("categories");
 
-        const result = await categoriesCollection.deleteOne(buildIdQuery(id));
-
-        if (result.deletedCount === 0) {
+        const existingCat = await categoriesCollection.findOne(buildIdQuery(id));
+        if (!existingCat) {
             return res.status(404).send({ message: "Category not found" });
         }
+
+        if (existingCat.image) {
+            await deleteFile(existingCat.image);
+        }
+
+        await categoriesCollection.deleteOne(buildIdQuery(id));
 
         clearCache();
         res.send({ message: "Category deleted successfully" });

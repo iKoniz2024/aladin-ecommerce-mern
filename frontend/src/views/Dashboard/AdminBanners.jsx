@@ -9,6 +9,7 @@ import { motion, AnimatePresence } from "framer-motion";
 import toast from "react-hot-toast";
 import { Plus, Trash2, X, Image, Pencil, Save, Upload } from "lucide-react";
 import { getBanners, createBanner, updateBanner, deleteBanner } from "@/services/banner.api";
+import { uploadImage } from "@/services/upload.api";
 import { Button } from "@/components/ui/Button";
 import Input from "@/components/ui/Input";
 import { Skeleton } from "@/components/ui/skeleton";
@@ -21,175 +22,155 @@ const bannerSchema = z.object({
   isActive: z.boolean().optional().default(true),
 });
 
-import { compressImage } from "@/utils/compressImage";
-
-const toBase64 = (file) => compressImage(file);
-
 export default function AdminBanners({ children }) {
   const { siteName } = useSettings();
   const queryClient = useQueryClient();
+
   const [showForm, setShowForm] = useState(false);
   const [editingId, setEditingId] = useState(null);
   const [deletingId, setDeletingId] = useState(null);
-  const [createImage, setCreateImage] = useState("");
+
+  const [createImageFile, setCreateImageFile] = useState(null);
   const [createPreview, setCreatePreview] = useState("");
-  const [editImage, setEditImage] = useState("");
+  const [editImageFile, setEditImageFile] = useState(null);
   const [editPreview, setEditPreview] = useState("");
-  const createFileRef = useRef(null);
-  const editFileRef = useRef(null);
+  const [isUploading, setIsUploading] = useState(false);
 
-  const { data, isLoading } = useQuery({
-    queryKey: ["admin-banners"],
-    queryFn: getBanners,
-    staleTime: 5 * 60 * 1000,
-  });
-
-  const banners = data ?? [];
+  const createFileInputRef = useRef(null);
+  const editFileInputRef = useRef(null);
 
   const {
-    register: regCreate,
+    register: registerCreate,
     handleSubmit: handleSubmitCreate,
-    formState: { errors: errCreate },
     reset: resetCreate,
+    formState: { errors: createErrors },
   } = useForm({
     resolver: zodResolver(bannerSchema),
     defaultValues: { title: "", link: "", isActive: true },
   });
 
   const {
-    register: regUpdate,
+    register: registerUpdate,
     handleSubmit: handleSubmitUpdate,
-    formState: { errors: errUpdate },
     reset: resetUpdate,
+    formState: { errors: updateErrors },
   } = useForm({
     resolver: zodResolver(bannerSchema),
+    defaultValues: { title: "", link: "", isActive: true },
   });
+
+  const { data, isLoading, isError } = useQuery({
+    queryKey: ["admin-banners"],
+    queryFn: getBanners,
+  });
+
+  const banners = data ?? [];
 
   const createMutation = useMutation({
     mutationFn: createBanner,
-    onSuccess: (res, variables) => {
-      toast.success("Banner created");
-      queryClient.setQueryData(["admin-banners"], (old) => {
-        const newBanner = {
-          _id: res?.insertedId || res?._id || Date.now().toString(),
-          ...variables,
-        };
-        return [...(old || []), newBanner];
-      });
-      queryClient.invalidateQueries();
+    onSuccess: () => {
+      toast.success("Banner created successfully");
       setShowForm(false);
       resetCreate();
-      setCreateImage("");
+      setCreateImageFile(null);
       setCreatePreview("");
+      queryClient.invalidateQueries(["admin-banners"]);
     },
-    onError: (err) => {
-      toast.error(err?.response?.data?.message || "Failed to create banner");
+    onError: (error) => {
+      toast.error(error?.response?.data?.message || "Failed to create banner");
     },
   });
 
   const updateMutation = useMutation({
     mutationFn: ({ id, payload }) => updateBanner(id, payload),
-    onSuccess: (res, variables) => {
-      toast.success("Banner updated");
-      queryClient.setQueryData(["admin-banners"], (old) => {
-        return (old || []).map((b) =>
-          b._id === variables.id ? { ...b, ...variables.payload } : b
-        );
-      });
-      queryClient.invalidateQueries();
+    onSuccess: () => {
+      toast.success("Banner updated successfully");
       setEditingId(null);
-      resetUpdate();
-      setEditImage("");
+      setEditImageFile(null);
       setEditPreview("");
+      queryClient.invalidateQueries(["admin-banners"]);
     },
-    onError: (err) => {
-      toast.error(err?.response?.data?.message || "Failed to update banner");
+    onError: (error) => {
+      toast.error(error?.response?.data?.message || "Failed to update banner");
     },
   });
 
   const deleteMutation = useMutation({
     mutationFn: deleteBanner,
-    onMutate: async (deletedId) => {
-      await queryClient.cancelQueries({ queryKey: ["admin-banners"] });
-      const previousBanners = queryClient.getQueryData(["admin-banners"]);
-      queryClient.setQueryData(["admin-banners"], (old) =>
-        (old || []).filter((b) => b._id !== deletedId)
-      );
-      return { previousBanners };
-    },
-    onError: (err, deletedId, context) => {
-      if (context?.previousBanners) {
-        queryClient.setQueryData(["admin-banners"], context.previousBanners);
-      }
-      toast.error(err?.response?.data?.message || "Failed to delete banner");
-    },
     onSuccess: () => {
       toast.success("Banner deleted");
       setDeletingId(null);
-    },
-    onSettled: () => {
-      queryClient.invalidateQueries();
+      queryClient.invalidateQueries(["admin-banners"]);
     },
   });
 
-  const handleCreateImage = async (e) => {
+  const handleCreateImage = (e) => {
     const file = e.target.files?.[0];
     if (!file) return;
-    try {
-      const base64 = await toBase64(file);
-      setCreateImage(base64);
-      setCreatePreview(URL.createObjectURL(file));
-    } catch {
-      toast.error("Failed to read image");
-    }
+    setCreateImageFile(file);
+    setCreatePreview(URL.createObjectURL(file));
     e.target.value = "";
   };
 
-  const handleEditImage = async (e) => {
+  const handleEditImage = (e) => {
     const file = e.target.files?.[0];
     if (!file) return;
-    try {
-      const base64 = await toBase64(file);
-      setEditImage(base64);
-      setEditPreview(URL.createObjectURL(file));
-    } catch {
-      toast.error("Failed to read image");
-    }
+    setEditImageFile(file);
+    setEditPreview(URL.createObjectURL(file));
     e.target.value = "";
   };
 
-  const onCreateSubmit = (formData) => {
-    if (!createImage) {
+  const onCreateSubmit = async (formData) => {
+    if (!createImageFile) {
       toast.error("Please upload an image");
       return;
     }
-    createMutation.mutate({
-      title: formData.title,
-      image: createImage,
-      link: formData.link || "",
-      isActive: formData.isActive ?? true,
-    });
-  };
-
-  const onUpdateSubmit = (formData) => {
-    if (!editImage) {
-      toast.error("Please upload an image");
-      return;
-    }
-    updateMutation.mutate({
-      id: editingId,
-      payload: {
+    try {
+      setIsUploading(true);
+      const imageUrl = await uploadImage(createImageFile);
+      createMutation.mutate({
         title: formData.title,
-        image: editImage,
+        image: imageUrl,
         link: formData.link || "",
         isActive: formData.isActive ?? true,
-      },
-    });
+      });
+    } catch (err) {
+      toast.error(err?.response?.data?.message || "Failed to upload image");
+    } finally {
+      setIsUploading(false);
+    }
+  };
+
+  const onUpdateSubmit = async (formData) => {
+    if (!editPreview) {
+      toast.error("Please upload an image");
+      return;
+    }
+    try {
+      setIsUploading(true);
+      let imageUrl = editPreview;
+      if (editImageFile) {
+        imageUrl = await uploadImage(editImageFile);
+      }
+      updateMutation.mutate({
+        id: editingId,
+        payload: {
+          title: formData.title,
+          image: imageUrl,
+          link: formData.link || "",
+          isActive: formData.isActive ?? true,
+        },
+      });
+    } catch (err) {
+      toast.error(err?.response?.data?.message || "Failed to upload image");
+    } finally {
+      setIsUploading(false);
+    }
   };
 
   const startEdit = (banner) => {
     setEditingId(banner._id);
-    setEditImage(banner.image || banner.images?.[0] || "");
+    setEditImageFile(null);
     setEditPreview(banner.image || banner.images?.[0] || "");
     resetUpdate({
       title: banner.title,

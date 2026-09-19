@@ -7,41 +7,46 @@ export const metadata = {
 
 export const revalidate = 300;
 
+async function safeFetch(url, options = {}) {
+  try {
+    const controller = new AbortController();
+    const timeoutId = setTimeout(() => controller.abort(), 8000);
+    const res = await fetch(url, {
+      ...options,
+      signal: controller.signal,
+    });
+    clearTimeout(timeoutId);
+    if (!res.ok) return null;
+    return await res.json();
+  } catch (err) {
+    return null;
+  }
+}
+
 async function fetchHomeData() {
   const baseUrl = getApiUrl();
 
-  try {
-    const [
-      categoriesRes,
-      newArrivalsRes,
-      bestSellingRes,
-      flashSaleRes,
-      bannersRes
-    ] = await Promise.all([
-      fetch(`${baseUrl}/categories/with-counts`, { next: { revalidate: 60 } }),
-      fetch(`${baseUrl}/products/new-arrivals`, { next: { revalidate: 60 } }),
-      fetch(`${baseUrl}/products/best-sellers`, { next: { revalidate: 60 } }),
-      fetch(`${baseUrl}/products/flash-sale`, { next: { revalidate: 60 } }),
-      fetch(`${baseUrl}/banners`, { next: { revalidate: 60 } }),
-    ]);
+  const [
+    categoriesData,
+    newArrivalsData,
+    bestSellingData,
+    flashSaleData,
+    bannersData
+  ] = await Promise.all([
+    safeFetch(`${baseUrl}/categories/with-counts`, { next: { revalidate: 60 } }),
+    safeFetch(`${baseUrl}/products/new-arrivals`, { next: { revalidate: 60 } }),
+    safeFetch(`${baseUrl}/products/best-sellers`, { next: { revalidate: 60 } }),
+    safeFetch(`${baseUrl}/products/flash-sale`, { next: { revalidate: 60 } }),
+    safeFetch(`${baseUrl}/banners`, { cache: "no-store" }),
+  ]);
 
-    return {
-      categoriesData: categoriesRes.ok ? await categoriesRes.json() : [],
-      newArrivalsData: newArrivalsRes.ok ? await newArrivalsRes.json() : { products: [] },
-      bestSellingData: bestSellingRes.ok ? await bestSellingRes.json() : { products: [] },
-      flashSaleData: flashSaleRes.ok ? await flashSaleRes.json() : { products: [] },
-      bannersData: bannersRes.ok ? await bannersRes.json() : [],
-    };
-  } catch (err) {
-    console.error("Failed to fetch home page data:", err.message);
-    return {
-      categoriesData: [],
-      newArrivalsData: { products: [] },
-      bestSellingData: { products: [] },
-      flashSaleData: { products: [] },
-      bannersData: [],
-    };
-  }
+  return {
+    categoriesData: categoriesData || [],
+    newArrivalsData: newArrivalsData || { products: [] },
+    bestSellingData: bestSellingData || { products: [] },
+    flashSaleData: flashSaleData || { products: [] },
+    bannersData: bannersData || [],
+  };
 }
 
 export default async function Page() {

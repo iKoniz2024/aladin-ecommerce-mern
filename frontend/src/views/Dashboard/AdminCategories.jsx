@@ -55,14 +55,14 @@ function generateSlug(name) {
   return name.toLowerCase().replace(/\s+/g, "-").replace(/[^a-z0-9-]/g, "");
 }
 
-import { compressImage } from "@/utils/compressImage";
-
-const toBase64 = (file) => compressImage(file);
+import { uploadImage } from "@/services/upload.api";
 
 export default function AdminCategories({ children }) {
   const { siteName } = useSettings();
   const queryClient = useQueryClient();
   const [showForm, setShowForm] = useState(false);
+  const [createImageFile, setCreateImageFile] = useState(null);
+  const [editImageFile, setEditImageFile] = useState(null);
   const [editingId, setEditingId] = useState(null);
   const [deletingId, setDeletingId] = useState(null);
   const [createImage, setCreateImage] = useState("");
@@ -217,57 +217,65 @@ export default function AdminCategories({ children }) {
     }));
   };
 
-  const onCreateSubmit = (formData) => {
-    const payload = {
-      name: formData.name,
-      slug: formData.slug.toLowerCase().replace(/\s+/g, "-"),
-      image: createImage,
-      attributes: processAttributes(formData.attributes),
-      children: formData.children.map((child) => ({
-        name: child.name,
-        slug: child.slug.toLowerCase().replace(/\s+/g, "-"),
-        categories: child.categories || [],
-      })),
-    };
-    createMutation.mutate(payload);
-  };
-
-  const onUpdateSubmit = (formData) => {
-    const payload = {};
-    if (formData.name) payload.name = formData.name;
-    if (formData.slug) payload.slug = formData.slug.toLowerCase().replace(/\s+/g, "-");
-    if (editImage) payload.image = editImage;
-    if (formData.attributes) payload.attributes = processAttributes(formData.attributes);
-    if (formData.children) {
-      payload.children = formData.children.map((child) => ({
-        name: child.name,
-        slug: child.slug.toLowerCase().replace(/\s+/g, "-"),
-        categories: child.categories || [],
-      }));
+  const onCreateSubmit = async (formData) => {
+    try {
+      let imageUrl = createImage;
+      if (createImageFile) {
+        imageUrl = await uploadImage(createImageFile);
+      }
+      const payload = {
+        name: formData.name,
+        slug: formData.slug.toLowerCase().replace(/\s+/g, "-"),
+        image: imageUrl,
+        attributes: processAttributes(formData.attributes),
+        children: formData.children.map((child) => ({
+          name: child.name,
+          slug: child.slug.toLowerCase().replace(/\s+/g, "-"),
+          categories: child.categories || [],
+        })),
+      };
+      createMutation.mutate(payload);
+    } catch (err) {
+      toast.error(err?.response?.data?.message || "Failed to upload image");
     }
-    updateMutation.mutate({ id: editingId, payload });
   };
 
-  const handleCreateImageUpload = async (e) => {
+  const onUpdateSubmit = async (formData) => {
+    try {
+      let imageUrl = editImage;
+      if (editImageFile) {
+        imageUrl = await uploadImage(editImageFile);
+      }
+      const payload = {};
+      if (formData.name) payload.name = formData.name;
+      if (formData.slug) payload.slug = formData.slug.toLowerCase().replace(/\s+/g, "-");
+      if (imageUrl) payload.image = imageUrl;
+      if (formData.attributes) payload.attributes = processAttributes(formData.attributes);
+      if (formData.children) {
+        payload.children = formData.children.map((child) => ({
+          name: child.name,
+          slug: child.slug.toLowerCase().replace(/\s+/g, "-"),
+          categories: child.categories || [],
+        }));
+      }
+      updateMutation.mutate({ id: editingId, payload });
+    } catch (err) {
+      toast.error(err?.response?.data?.message || "Failed to upload image");
+    }
+  };
+
+  const handleCreateImageUpload = (e) => {
     const file = e.target.files?.[0];
     if (!file) return;
-    if (file.size > 2 * 1024 * 1024) {
-      toast.error("Image must be less than 2MB");
-      return;
-    }
-    const base64 = await toBase64(file);
-    setCreateImage(base64);
+    setCreateImageFile(file);
+    setCreateImage(URL.createObjectURL(file));
   };
 
-  const handleEditImageUpload = async (e) => {
+  const handleEditImageUpload = (e) => {
     const file = e.target.files?.[0];
     if (!file) return;
-    if (file.size > 2 * 1024 * 1024) {
-      toast.error("Image must be less than 2MB");
-      return;
-    }
-    const base64 = await toBase64(file);
-    setEditImage(base64);
+    setEditImageFile(file);
+    setEditImage(URL.createObjectURL(file));
   };
 
   const startEdit = (cat) => {
